@@ -42,11 +42,13 @@ public:
                 int nWidth = CW_USEDEFAULT, int nHeight = CW_USEDEFAULT,
                 HWND hWndParent = NULL, HMENU hMenu = NULL)
     {
-        WNDCLASS wc = {0};
+        WNDCLASS wc = { };
 
         wc.lpfnWndProc = DERIVED_TYPE::WindowProc;
         wc.hInstance = GetModuleHandle(NULL);
         wc.lpszClassName = ClassName();
+        // TODO(jaege): Test what the influence of wc.style is.
+        //wc.style = CS_HREDRAW | CS_VREDRAW;
 
         RegisterClass(&wc);
 

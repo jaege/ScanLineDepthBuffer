@@ -13,6 +13,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     if (!win.Create(L"Scan-Line Z-Buffering Algorithm Display",
                     WS_OVERLAPPEDWINDOW))
     {
+        OutputDebugString(L"Error: Fail to create MainWindow.");
         return 0;
     }
 
