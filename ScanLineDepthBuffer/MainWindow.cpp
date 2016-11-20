@@ -1,4 +1,3 @@
-//#include <cstdlib>
 #include <string>
 #include <Windows.h>
 #include <shobjidl.h> 
@@ -60,7 +59,6 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void MainWindow::Resize(UINT32 width, UINT32 height)
 {
-    // TODO(jaege): check which go first, free old memory or allocate new.
     if (m_buffer.memory)
     {
         VirtualFree(m_buffer.memory, 0, MEM_RELEASE);
@@ -77,28 +75,27 @@ void MainWindow::Resize(UINT32 width, UINT32 height)
     m_buffer.info.bmiHeader.biPlanes = 1;
     m_buffer.info.bmiHeader.biBitCount = 32;
     m_buffer.info.bmiHeader.biCompression = BI_RGB;
-    //m_buffer.info.bmiHeader.biSizeImage = 0;
-    //m_buffer.info.bmiHeader.biXPelsPerMeter = 0;
-    //m_buffer.info.bmiHeader.biYPelsPerMeter = 0;
-    //m_buffer.info.bmiHeader.biClrUsed = 0;
-    //m_buffer.info.bmiHeader.biClrImportant = 0;
 
-    int bitmapMemorySize =
-        m_buffer.width * m_buffer.height * BYTES_PER_PIXEL;
-    m_buffer.memory =
-        VirtualAlloc(0, bitmapMemorySize, MEM_COMMIT, PAGE_READWRITE);
+    int bitmapMemorySize = m_buffer.width * m_buffer.height * BYTES_PER_PIXEL;
+    m_buffer.memory = VirtualAlloc(0, bitmapMemorySize,
+                                   MEM_COMMIT, PAGE_READWRITE);
 
-    if (!m_buffer.memory)
+    if (m_buffer.memory)
     {
-        OutputDebugString(L"VirtualAlloc Failed.");
+        Render();
+    }
+    else if (width != 0 && height != 0)
+    {
+        OutputDebugString(L"VirtualAlloc Failed.\n");
         std::abort();
     }
-
-    Render();
 }
 
 void MainWindow::Render()
 {
+    // TODO(jaege): Below code is just for fun, I will implement scan-line
+    //              z-buffer algorithm here in future.
+
     UINT8 *row = (UINT8 *)m_buffer.memory;
     for (int y = 0; y < m_buffer.height; ++y)
     {
@@ -107,7 +104,7 @@ void MainWindow::Render()
         {
             *pixel++ = (((UINT8)(x)) << 16) |  // Red
                        (((UINT8)(y)) << 8) |  // Green
-                       0;  // Blue
+                       (UINT8)(x + y);  // Blue
         }
         row += m_buffer.pitch;
     }
@@ -121,7 +118,6 @@ void MainWindow::OpenObjFile()
     {
         IFileOpenDialog *pFileOpen;
 
-        // Create the FileOpenDialog object.
         hr = CoCreateInstance(__uuidof(FileOpenDialog), NULL, CLSCTX_ALL, 
                               IID_PPV_ARGS(&pFileOpen));
 
@@ -134,7 +130,6 @@ void MainWindow::OpenObjFile()
 
             hr = pFileOpen->Show(NULL);
 
-            // Get the file name from the dialog box.
             if (SUCCEEDED(hr))
             {
                 IShellItem *pItem;
@@ -146,7 +141,6 @@ void MainWindow::OpenObjFile()
 
                     m_objFilePath = std::wstring(pszFilePath);
 
-                    // Display the file name to the user.
                     if (SUCCEEDED(hr))
                     {
                         OutputDebugString(m_objFilePath.c_str());
