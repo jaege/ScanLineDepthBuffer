@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <Windows.h>
 #include "BaseWindow.h"
 
@@ -17,12 +18,15 @@ struct OffscreenBuffer
 class MainWindow : public BaseWindow<MainWindow>
 {
 public:
-    MainWindow() : m_buffer() { }
+    MainWindow() : m_buffer(), m_objFilePath() { }
     PCWSTR ClassName() const { return L"MainWindow"; }
     LRESULT HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
+    void OpenObjFile();
+
 private:
     OffscreenBuffer m_buffer;
+    std::wstring m_objFilePath;
 
     void Resize(UINT32 width, UINT32 height);
     void Render();

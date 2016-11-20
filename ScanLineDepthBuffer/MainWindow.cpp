@@ -1,5 +1,7 @@
-#include <cstdlib>
+//#include <cstdlib>
+#include <string>
 #include <Windows.h>
+#include <shobjidl.h> 
 #include "MainWindow.h"
 
 LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -97,16 +99,65 @@ void MainWindow::Resize(UINT32 width, UINT32 height)
 
 void MainWindow::Render()
 {
-    UINT8 *Row = (UINT8 *)m_buffer.memory;
+    UINT8 *row = (UINT8 *)m_buffer.memory;
     for (int y = 0; y < m_buffer.height; ++y)
     {
-        UINT32 *Pixel = (UINT32 *)Row;
+        UINT32 *pixel = (UINT32 *)row;
         for (int x = 0; x < m_buffer.width; ++x)
         {
-            *Pixel++ = (((UINT8)(x)) << 16) |  // Red
-                (((UINT8)(y)) << 8) |  // Green
-                0;                                // Blue
+            *pixel++ = (((UINT8)(x)) << 16) |  // Red
+                       (((UINT8)(y)) << 8) |  // Green
+                       0;  // Blue
         }
-        Row += m_buffer.pitch;
+        row += m_buffer.pitch;
+    }
+}
+
+void MainWindow::OpenObjFile()
+{
+    HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED |
+                                COINIT_DISABLE_OLE1DDE);
+    if (SUCCEEDED(hr))
+    {
+        IFileOpenDialog *pFileOpen;
+
+        // Create the FileOpenDialog object.
+        hr = CoCreateInstance(__uuidof(FileOpenDialog), NULL, CLSCTX_ALL, 
+                              IID_PPV_ARGS(&pFileOpen));
+
+        if (SUCCEEDED(hr))
+        {
+            COMDLG_FILTERSPEC filter = {L"Obj files (*.obj)", L"*.obj"};
+            pFileOpen->SetFileTypes(1, &filter);
+
+            pFileOpen->SetTitle(L"请选择要打开的 obj 文件");
+
+            hr = pFileOpen->Show(NULL);
+
+            // Get the file name from the dialog box.
+            if (SUCCEEDED(hr))
+            {
+                IShellItem *pItem;
+                hr = pFileOpen->GetResult(&pItem);
+                if (SUCCEEDED(hr))
+                {
+                    PWSTR pszFilePath;
+                    hr = pItem->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
+
+                    m_objFilePath = std::wstring(pszFilePath);
+
+                    // Display the file name to the user.
+                    if (SUCCEEDED(hr))
+                    {
+                        OutputDebugString(m_objFilePath.c_str());
+                        OutputDebugString(L"\n");
+                        CoTaskMemFree(pszFilePath);
+                    }
+                    pItem->Release();
+                }
+            }
+            pFileOpen->Release();
+        }
+        CoUninitialize();
     }
 }
