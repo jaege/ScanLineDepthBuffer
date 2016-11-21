@@ -1,4 +1,4 @@
-#ifndef UNICODE
+ï»¿#ifndef UNICODE
 #define UNICODE
 #endif
 
@@ -10,9 +10,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 {
     MainWindow win;
 
-    if (!win.Create(L"É¨ÃèÏß Z-Buffer Ëã·¨ÑİÊ¾", WS_OVERLAPPEDWINDOW))
+    if (!win.Create(L"æ‰«æçº¿ Z-Buffer ç®—æ³•æ¼”ç¤º", WS_OVERLAPPEDWINDOW))
     {
-        OutputDebugString(L"Error: Fail to create MainWindow.");
+        OutputDebugString(L"Error: Fail to create MainWindow.\n");
         return 0;
     }
 

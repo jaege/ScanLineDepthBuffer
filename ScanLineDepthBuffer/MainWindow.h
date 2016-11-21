@@ -1,15 +1,16 @@
-#pragma once
+﻿#pragma once
 
 #include <string>
 #include <Windows.h>
 #include "BaseWindow.h"
+#include "ObjModel.h"
 
 #define BYTES_PER_PIXEL 4
 
 struct OffscreenBuffer
 {
     BITMAPINFO info;
-    void *memory;
+    LPVOID memory;
     INT32 width;
     INT32 height;
     INT32 pitch;
@@ -18,7 +19,7 @@ struct OffscreenBuffer
 class MainWindow : public BaseWindow<MainWindow>
 {
 public:
-    MainWindow() : m_buffer(), m_objFilePath() { }
+    MainWindow() : m_buffer(), m_objModel() { }
     PCWSTR ClassName() const { return L"MainWindow"; }
     LRESULT HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -26,8 +27,8 @@ public:
 
 private:
     OffscreenBuffer m_buffer;
-    std::wstring m_objFilePath;
+    ObjModel m_objModel;
 
-    void Resize(UINT32 width, UINT32 height);
+    void Resize(INT32 width, INT32 height);
     void Render();
 };

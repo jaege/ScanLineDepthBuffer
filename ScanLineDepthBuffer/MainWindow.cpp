@@ -1,4 +1,4 @@
-#include <string>
+ï»¿#include <string>
 #include <Windows.h>
 #include <shobjidl.h> 
 #include "MainWindow.h"
@@ -57,7 +57,7 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
     return DefWindowProc(m_hwnd, uMsg, wParam, lParam);
 }
 
-void MainWindow::Resize(UINT32 width, UINT32 height)
+void MainWindow::Resize(INT32 width, INT32 height)
 {
     if (m_buffer.memory)
     {
@@ -76,7 +76,8 @@ void MainWindow::Resize(UINT32 width, UINT32 height)
     m_buffer.info.bmiHeader.biBitCount = 32;
     m_buffer.info.bmiHeader.biCompression = BI_RGB;
 
-    int bitmapMemorySize = m_buffer.width * m_buffer.height * BYTES_PER_PIXEL;
+    SIZE_T bitmapMemorySize = m_buffer.width * m_buffer.height *
+        BYTES_PER_PIXEL;
     m_buffer.memory = VirtualAlloc(0, bitmapMemorySize,
                                    MEM_COMMIT, PAGE_READWRITE);
 
@@ -126,7 +127,7 @@ void MainWindow::OpenObjFile()
             COMDLG_FILTERSPEC filter = {L"Obj files (*.obj)", L"*.obj"};
             pFileOpen->SetFileTypes(1, &filter);
 
-            pFileOpen->SetTitle(L"ÇëÑ¡ÔñÒª´ò¿ªµÄ obj ÎÄ¼þ");
+            pFileOpen->SetTitle(L"è¯·é€‰æ‹©è¦æ‰“å¼€çš„ obj æ–‡ä»¶");
 
             hr = pFileOpen->Show(NULL);
 
@@ -139,12 +140,16 @@ void MainWindow::OpenObjFile()
                     PWSTR pszFilePath;
                     hr = pItem->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
 
-                    m_objFilePath = std::wstring(pszFilePath);
 
                     if (SUCCEEDED(hr))
                     {
-                        OutputDebugString(m_objFilePath.c_str());
+                        OutputDebugString(pszFilePath);
                         OutputDebugString(L"\n");
+                        // TODO(jaege): Load file to m_objModel.
+
+                        m_objModel.LoadFromObjFile(pszFilePath);
+
+
                         CoTaskMemFree(pszFilePath);
                     }
                     pItem->Release();
