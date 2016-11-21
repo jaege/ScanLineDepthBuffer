@@ -4,17 +4,7 @@
 #include <Windows.h>
 #include "BaseWindow.h"
 #include "ObjModel.h"
-
-#define BYTES_PER_PIXEL 4
-
-struct OffscreenBuffer
-{
-    BITMAPINFO info;
-    LPVOID memory;
-    INT32 width;
-    INT32 height;
-    INT32 pitch;
-};
+#include "OffscreenBuffer.h"
 
 class MainWindow : public BaseWindow<MainWindow>
 {
@@ -29,6 +19,4 @@ private:
     OffscreenBuffer m_buffer;
     ObjModel m_objModel;
 
-    void Resize(INT32 width, INT32 height);
-    void Render();
 };

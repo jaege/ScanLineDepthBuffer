@@ -24,6 +24,9 @@
     <ClInclude Include="ObjModel.h">
       <Filter>源文件</Filter>
     </ClInclude>
+    <ClInclude Include="OffscreenBuffer.h">
+      <Filter>源文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MainWindow.cpp">
@@ -33,6 +36,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="ObjModel.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="OffscreenBuffer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

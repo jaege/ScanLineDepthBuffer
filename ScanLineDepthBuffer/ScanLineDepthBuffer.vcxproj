@@ -114,11 +114,13 @@
     <ClInclude Include="BaseWindow.h" />
     <ClInclude Include="MainWindow.h" />
     <ClInclude Include="ObjModel.h" />
+    <ClInclude Include="OffscreenBuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MainWindow.cpp" />
     <ClCompile Include="ObjModel.cpp" />
+    <ClCompile Include="OffscreenBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="README.md" />

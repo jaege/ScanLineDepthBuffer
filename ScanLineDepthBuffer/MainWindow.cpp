@@ -27,7 +27,7 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
             GetClientRect(m_hwnd, &rc);
             LONG width = rc.right - rc.left;
             LONG height = rc.bottom - rc.top;
-            Resize(width, height);
+            m_buffer.Resize(width, height);
         }
         return 0;
 
@@ -42,73 +42,13 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
             LONG width = rc.right - rc.left;
             LONG height = rc.bottom - rc.top;
 
-            StretchDIBits(hdc,
-                          0, 0, width, height,
-                          0, 0, m_buffer.width, m_buffer.height,
-                          m_buffer.memory,
-                          &(m_buffer.info),
-                          DIB_RGB_COLORS,
-                          SRCCOPY);
+            m_buffer.OnPaint(hdc, width, height);
 
             EndPaint(m_hwnd, &ps);
         }
         return 0;
     }
     return DefWindowProc(m_hwnd, uMsg, wParam, lParam);
-}
-
-void MainWindow::Resize(INT32 width, INT32 height)
-{
-    if (m_buffer.memory)
-    {
-        VirtualFree(m_buffer.memory, 0, MEM_RELEASE);
-        m_buffer.memory = NULL;
-    }
-
-    m_buffer.width = width;
-    m_buffer.height = height;
-    m_buffer.pitch = m_buffer.width * BYTES_PER_PIXEL;
-
-    m_buffer.info.bmiHeader.biSize = sizeof(m_buffer.info.bmiHeader);
-    m_buffer.info.bmiHeader.biWidth = m_buffer.width;
-    m_buffer.info.bmiHeader.biHeight = -m_buffer.height;
-    m_buffer.info.bmiHeader.biPlanes = 1;
-    m_buffer.info.bmiHeader.biBitCount = 32;
-    m_buffer.info.bmiHeader.biCompression = BI_RGB;
-
-    SIZE_T bitmapMemorySize = m_buffer.width * m_buffer.height *
-        BYTES_PER_PIXEL;
-    m_buffer.memory = VirtualAlloc(0, bitmapMemorySize,
-                                   MEM_COMMIT, PAGE_READWRITE);
-
-    if (m_buffer.memory)
-    {
-        Render();
-    }
-    else if (width != 0 && height != 0)
-    {
-        OutputDebugString(L"VirtualAlloc Failed.\n");
-        std::abort();
-    }
-}
-
-void MainWindow::Render()
-{
-    // TODO(jaege): Below code is just for fun, I will implement scan-line
-    //              z-buffer algorithm here in future.
-
-    UINT8 *row = (UINT8 *)m_buffer.memory;
-    for (int y = 0; y < m_buffer.height; ++y)
-    {
-        UINT32 *pixel = (UINT32 *)row;
-        for (int x = 0; x < m_buffer.width; ++x)
-        {
-            *pixel++ = (((UINT8)(x)) << 16) |  // Red
-                       (((UINT8)(y)) << 8) |  // Green
-                       (UINT8)(x + y);  // Blue
-        }
-        row += m_buffer.pitch;
-    }
 }
 
 void MainWindow::OpenObjFile()
