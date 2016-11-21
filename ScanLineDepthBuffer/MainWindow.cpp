@@ -29,7 +29,10 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
             LONG width = rc.right - rc.left;
             LONG height = rc.bottom - rc.top;
             m_buffer.Resize(width, height);
-            // TODO(jaege): m_objModel set m_buffer
+            // TODO(jaege): use m_objModel set m_buffer
+            m_objModel.ScaleModel(width, height, 0.95);
+            m_buffer.DebugDrawBoundingRect(m_objModel.GetBoundingRect(),
+                                           Color());
         }
         return 0;
 

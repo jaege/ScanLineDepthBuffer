@@ -21,8 +21,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
     win.OpenObjFile();
 
-    win.InitObject();
-
     ShowWindow(win.Window(), nCmdShow);
     
     UpdateWindow(win.Window());

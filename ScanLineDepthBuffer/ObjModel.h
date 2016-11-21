@@ -1,5 +1,16 @@
 ﻿#pragma once
 
+#include <cfloat>
+#include <string>
+#include <vector>
+#include <Windows.h>
+
+//template<class T> 
+//const T& min(const T& a, const T& b)
+//{
+//    return (b < a) ? b : a;
+//}
+
 template <typename T>
 struct Triple
 {
@@ -17,8 +28,6 @@ struct FaceNode
     int vn;
 };
 
-#include <cfloat>
-
 struct BoundingBox
 {
     double xmin;
@@ -33,14 +42,17 @@ struct BoundingBox
                     zmin(DBL_MAX), zmax(DBL_MIN) { }
 };
 
-#include <string>
-#include <vector>
-
 class ObjModel
 {
 public:
     void LoadFromObjFile(const std::wstring &filePath);
+    RECT GetBoundingRect() const { return m_boundingRect; }
     void Init();
+
+    // width: screen window width in pixel
+    // height: screen window height in pixel
+    // scaleFactor: object scale factor on x and y axes
+    void ScaleModel(LONG width, LONG height, double scaleFactor = 1.0);
 
 private:
     std::wstring m_filePath;
@@ -53,5 +65,7 @@ private:
 
     std::vector<std::vector<FaceNode>> m_faces;
 
-    BoundingBox box;
+    BoundingBox m_box;
+    RECT m_boundingRect{ };
+
 };

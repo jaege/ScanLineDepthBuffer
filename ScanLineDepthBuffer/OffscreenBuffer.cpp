@@ -69,7 +69,7 @@ void OffscreenBuffer::Render()
     }
 }
 
-void OffscreenBuffer::SetPixel(INT32 x, INT32 y, const Color & color)
+void OffscreenBuffer::SetPixel(INT32 x, INT32 y, const Color &color)
 {
     assert(x >= 0 && x < m_width && y >= 0 && y < m_height);
     UINT32 *pixel = (UINT32 *)((UINT8 *)m_memory +
@@ -78,7 +78,7 @@ void OffscreenBuffer::SetPixel(INT32 x, INT32 y, const Color & color)
     *pixel = color.GetColor();
 }
 
-void OffscreenBuffer::SetRow(INT32 y, const std::vector<Color>& row)
+void OffscreenBuffer::SetRow(INT32 y, const std::vector<Color> &row)
 {
     assert(y >= 0 && y < m_height && row.size() == m_width);
     UINT32 *pixel = (UINT32 *)((UINT8 *)m_memory + y * m_pitch);
@@ -90,4 +90,25 @@ void OffscreenBuffer::OnPaint(HDC hdc, LONG width, LONG height)
 { 
     StretchDIBits(hdc, 0, 0, width, height, 0, 0, m_width, m_height,
                   m_memory, &m_info, DIB_RGB_COLORS, SRCCOPY);
+}
+
+void OffscreenBuffer::DebugDrawBoundingRect(RECT rect, const Color &color)
+{
+    // Ignore rectangle that out of screen.
+    if (rect.left >= 0 && rect.left < m_width)
+        for (INT32 y = rect.top; y < rect.bottom; ++y)
+            if (y >= 0 && y < m_height)
+                SetPixel(rect.left, y, color);
+    if (rect.right >= 0 && rect.right < m_width)
+        for (INT32 y = rect.top; y < rect.bottom; ++y)
+            if (y >= 0 && y < m_height)
+                SetPixel(rect.right, y, color);
+    if (rect.top >= 0 && rect.top < m_height)
+        for (INT32 x = rect.left; x < rect.right; ++x)
+            if (x >= 0 && x < m_width)
+                SetPixel(x, rect.top, color);
+    if (rect.bottom >= 0 && rect.bottom < m_height)
+        for (INT32 x = rect.left; x < rect.right; ++x)
+            if (x >= 0 && x < m_width)
+                SetPixel(x, rect.bottom, color);
 }

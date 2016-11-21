@@ -1,6 +1,8 @@
 ﻿#include <string>
 #include <fstream>
 #include <sstream>
+#include <cassert>
+#include <Windows.h>
 #include "ObjModel.h"
 #include "DebugPrint.h"
 
@@ -52,12 +54,12 @@ void ObjModel::LoadFromObjFile(const std::wstring & filePath)
             case '\0':
                 // v x y z w
                 // w is ignored.
-                if (box.xmin > pos.x1) box.xmin = pos.x1;
-                if (box.xmax < pos.x1) box.xmax = pos.x1;
-                if (box.ymin > pos.x2) box.ymin = pos.x2;
-                if (box.ymax < pos.x2) box.ymax = pos.x2;
-                if (box.zmin > pos.x3) box.zmin = pos.x3;
-                if (box.zmax < pos.x3) box.zmax = pos.x3;
+                if (m_box.xmin > pos.x1) m_box.xmin = pos.x1;
+                if (m_box.xmax < pos.x1) m_box.xmax = pos.x1;
+                if (m_box.ymin > pos.x2) m_box.ymin = pos.x2;
+                if (m_box.ymax < pos.x2) m_box.ymax = pos.x2;
+                if (m_box.zmin > pos.x3) m_box.zmin = pos.x3;
+                if (m_box.zmax < pos.x3) m_box.zmax = pos.x3;
                 m_vertices.push_back(pos);
                 break;
             case 'n':
@@ -72,17 +74,11 @@ void ObjModel::LoadFromObjFile(const std::wstring & filePath)
 
         case 'f':
             // f  v1/vt1/vn1   v2/vt2/vn2   v3/vt3/vn3 ...
-
-            // Face elements use surface normals to indicate their orientation. If
-            // vertices are ordered counterclockwise around the face, both the
-            // face and the normal will point toward the viewer. If the vertex
-            // ordering is clockwise, both will point away from the viewer. If
-            // vertex normals are assigned, they should point in the general
-            // direction of the surface normal, otherwise unpredictable results
-            // may occur.
+            // Negative indices are not supported.
+            // Index 0 means not present in file.
             {
                 std::vector<FaceNode> face;
-                int v, vt, vn;  // 0 means not present in file.
+                int v, vt, vn;  
                 while (iss >> faceStrBuffer)
                 {
                     std::istringstream fsb(faceStrBuffer);
@@ -95,6 +91,7 @@ void ObjModel::LoadFromObjFile(const std::wstring & filePath)
                     faceStrBuffer = "";
                     std::getline(fsb, faceStrBuffer, '/');
                     vn = faceStrBuffer == "" ? 0 : std::stoi(faceStrBuffer);
+                    assert(v >= 0 && vt >= 0 && vn >= 0);
                     face.push_back({v, vt, vn});
                 }
                 m_faces.push_back(face);
@@ -122,4 +119,70 @@ void ObjModel::LoadFromObjFile(const std::wstring & filePath)
 void ObjModel::Init()
 {
     // TODO(jaege): initialize data structures for z-buffer algorithm
+}
+
+void ObjModel::ScaleModel(LONG width, LONG height, double scaleFactor)
+{
+    /* Transform object from object coordinate to screen coordinate, and move
+     * it to the center of the screen space.
+     * This is an affine transformation, because the z axis is not scaled with
+     * the same factor.
+     *
+     *     xScale = width / (xmax - xmin)
+     *     yScale = height / (ymax - ymin)
+     *     scale = min(xScale, yScale) * scaleFactor
+     *
+     *     x' = (x - (xmin + xmax) / 2) * scale + width / 2
+     *     y' = ((ymin + ymax) / 2 - y) * scale + height / 2
+     *     z' = (zmax - z) / (zmax - zmin)
+     *
+     * Old coordinate: (object space)
+     *
+     *        y ^
+     *          |
+     *          |
+     *          |
+     *          |
+     *          +---------> x
+     *         /
+     *        /
+     *       /
+     *      /
+     *     v z
+     *
+     * New coordinate: (screen space, x' and y' in pixel)
+     *
+     *               ^ z'
+     *              /
+     *             /
+     *            /
+     *           /
+     *          +---------> x'
+     *          |
+     *          |
+     *          |
+     *          |
+     *       y' v
+     *
+     */
+
+    assert(scaleFactor > 0);
+    double xScale = 1.0 * width / (m_box.xmax - m_box.xmin);
+    double yScale = 1.0 * height / (m_box.ymax - m_box.ymin);
+    // Ensure that the whole object can be seen in screen when scaleFactor <= 1.
+    double scale = min(xScale, yScale) * scaleFactor;
+    double zScale = 1.0 / (m_box.zmax - m_box.zmin);
+
+    // Round down to the nearest integer
+    m_boundingRect.left = (m_box.xmin - (m_box.xmin + m_box.xmax) / 2) *
+        scale + width / 2;
+    m_boundingRect.right = (m_box.xmax - (m_box.xmin + m_box.xmax) / 2) *
+        scale + width / 2;
+    m_boundingRect.top = ((m_box.ymin + m_box.ymax) / 2 - m_box.ymax) *
+        scale + height / 2;
+    m_boundingRect.bottom = ((m_box.ymin + m_box.ymax) / 2 - m_box.ymin) *
+        scale + height / 2;
+
+    //INT32 xnew = (x - (m_box.xmin + m_box.xmax) / 2) * scale + width / 2;
+    //INT32 ynew = ((m_box.ymin + m_box.ymax) / 2 - y) * scale + height / 2;
 }

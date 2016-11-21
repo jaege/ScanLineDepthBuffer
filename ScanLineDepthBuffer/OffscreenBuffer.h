@@ -16,6 +16,8 @@ public:
     void SetRow(INT32 y, const std::vector<Color> &row);
     void OnPaint(HDC hdc, LONG width, LONG height);
 
+    void DebugDrawBoundingRect(RECT rect, const Color &color);
+
     INT32 GetWidth() const { return m_width; }
     INT32 GetHeight() const { return m_height; }
 
