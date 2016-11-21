@@ -1,8 +1,8 @@
 ﻿#include <string>
 #include <fstream>
 #include <sstream>
-#include <iostream>  // std::cerr
 #include "ObjModel.h"
+#include "DebugPrint.h"
 
 void ObjModel::LoadFromObjFile(const std::wstring & filePath)
 {
@@ -26,8 +26,8 @@ void ObjModel::LoadFromObjFile(const std::wstring & filePath)
 
     if (!fileStream.is_open())
     {
-        std::wcerr << L"[ObjModel::LoadFromObjFile] Fail to open file: "
-                   << m_filePath << std::endl;
+        DebugPrint(L"[ObjModel::LoadFromObjFile] Fail to open file: %s",
+                   m_filePath);
         std::abort();
     }
 
@@ -52,6 +52,12 @@ void ObjModel::LoadFromObjFile(const std::wstring & filePath)
             case '\0':
                 // v x y z w
                 // w is ignored.
+                if (box.xmin > pos.x1) box.xmin = pos.x1;
+                if (box.xmax < pos.x1) box.xmax = pos.x1;
+                if (box.ymin > pos.x2) box.ymin = pos.x2;
+                if (box.ymax < pos.x2) box.ymax = pos.x2;
+                if (box.zmin > pos.x3) box.zmin = pos.x3;
+                if (box.zmax < pos.x3) box.zmax = pos.x3;
                 m_vertices.push_back(pos);
                 break;
             case 'n':
@@ -96,6 +102,8 @@ void ObjModel::LoadFromObjFile(const std::wstring & filePath)
             break;
             
         case 'g':
+            // Ignored.
+
             // All grouping statements are state-setting.  This means that once
             // a group statement is set, it alpplies to all elements that follow
             // until the next group statement.
@@ -109,4 +117,9 @@ void ObjModel::LoadFromObjFile(const std::wstring & filePath)
     }
 
     // fileStream goes out of scope
+}
+
+void ObjModel::Init()
+{
+    // TODO(jaege): initialize data structures for z-buffer algorithm
 }

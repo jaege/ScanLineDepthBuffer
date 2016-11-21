@@ -16,16 +16,22 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BaseWindow.h">
-      <Filter>源文件</Filter>
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Color.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugPrint.h">
+      <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="MainWindow.h">
-      <Filter>源文件</Filter>
+      <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="ObjModel.h">
-      <Filter>源文件</Filter>
+      <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="OffscreenBuffer.h">
-      <Filter>源文件</Filter>
+      <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -39,6 +45,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="OffscreenBuffer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugPrint.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Color.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

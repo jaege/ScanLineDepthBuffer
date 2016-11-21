@@ -47,8 +47,8 @@ public:
         wc.lpfnWndProc = DERIVED_TYPE::WindowProc;
         wc.hInstance = GetModuleHandle(NULL);
         wc.lpszClassName = ClassName();
-        // TODO(jaege): Test what the influence of wc.style is.
-        //wc.style = CS_HREDRAW | CS_VREDRAW;
+        // NOTE(jaege): Force redraw whole window when any change happens.
+        wc.style = CS_HREDRAW | CS_VREDRAW;
 
         RegisterClass(&wc);
 

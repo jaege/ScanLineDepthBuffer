@@ -2,7 +2,10 @@
 #define UNICODE
 #endif
 
+#define ASSERTION_ENABLED
+
 #include <Windows.h>
+#include "DebugPrint.h"
 #include "MainWindow.h"
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
@@ -12,11 +15,13 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
     if (!win.Create(L"扫描线 Z-Buffer 算法演示", WS_OVERLAPPEDWINDOW))
     {
-        OutputDebugString(L"Error: Fail to create MainWindow.\n");
-        return 0;
+        DebugPrint(L"Error: Fail to create MainWindow.");
+        std::abort();
     }
 
     win.OpenObjFile();
+
+    win.InitObject();
 
     ShowWindow(win.Window(), nCmdShow);
     

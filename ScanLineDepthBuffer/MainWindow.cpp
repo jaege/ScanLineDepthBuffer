@@ -2,6 +2,7 @@
 #include <Windows.h>
 #include <shobjidl.h> 
 #include "MainWindow.h"
+#include "DebugPrint.h"
 
 LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -16,24 +17,25 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
     //    return 0;
 
     case WM_DESTROY:
-        OutputDebugString(L"WM_DESTROY\n");
+        DebugPrint(L"WM_DESTROY");
         PostQuitMessage(0);
         return 0;
 
     case WM_SIZE:
         {
-            OutputDebugString(L"WM_SIZE\n");
+            DebugPrint(L"WM_SIZE");
             RECT rc;
             GetClientRect(m_hwnd, &rc);
             LONG width = rc.right - rc.left;
             LONG height = rc.bottom - rc.top;
             m_buffer.Resize(width, height);
+            // TODO(jaege): m_objModel set m_buffer
         }
         return 0;
 
     case WM_PAINT:
         {
-            OutputDebugString(L"WM_PAINT\n");
+            DebugPrint(L"WM_PAINT");
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(m_hwnd, &ps);
 
@@ -80,11 +82,9 @@ void MainWindow::OpenObjFile()
                     PWSTR pszFilePath;
                     hr = pItem->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
 
-
                     if (SUCCEEDED(hr))
                     {
-                        OutputDebugString(pszFilePath);
-                        OutputDebugString(L"\n");
+                        DebugPrint(L"%s", pszFilePath);
                         // TODO(jaege): Load file to m_objModel.
 
                         m_objModel.LoadFromObjFile(pszFilePath);
@@ -92,11 +92,41 @@ void MainWindow::OpenObjFile()
 
                         CoTaskMemFree(pszFilePath);
                     }
+                    else
+                    {
+                        DebugPrint(L"pItem->GetDisplayName Failed.");
+                        std::abort();
+                    }
                     pItem->Release();
                 }
+                else
+                {
+                    DebugPrint(L"pFileOpen->GetResult Failed.");
+                    std::abort();
+                }
+            }
+            else
+            {
+                DebugPrint(L"pFileOpen->Show Failed.");
+                std::abort();
             }
             pFileOpen->Release();
         }
+        else
+        {
+            DebugPrint(L"CoCreateInstance Failed.");
+            std::abort();
+        }
         CoUninitialize();
     }
+    else
+    {
+        DebugPrint(L"CoInitializeEx Failed.");
+        std::abort();
+    }
+}
+
+void MainWindow::InitObject()
+{
+    m_objModel.Init();
 }
