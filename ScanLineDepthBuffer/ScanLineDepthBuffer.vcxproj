@@ -114,6 +114,7 @@
     <ClInclude Include="BaseWindow.h" />
     <ClInclude Include="Color.h" />
     <ClInclude Include="DebugPrint.h" />
+    <ClInclude Include="FloatingPoint.h" />
     <ClInclude Include="MainWindow.h" />
     <ClInclude Include="ObjModel.h" />
     <ClInclude Include="OffscreenBuffer.h" />

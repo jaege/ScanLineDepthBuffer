@@ -1,58 +1,45 @@
 ﻿#pragma once
 
-#include <cfloat>
+#include <cfloat>  // DBL_MIN DBL_MAX
 #include <string>
 #include <vector>
 #include <Windows.h>
-
-//template<class T> 
-//const T& min(const T& a, const T& b)
-//{
-//    return (b < a) ? b : a;
-//}
+#include "Color.h"
+#include "OffscreenBuffer.h"
 
 template <typename T>
 struct Triple
 {
-    T x1;
-    T x2;
-    T x3;
+    using value_type = T;
+    T x;
+    T y;
+    T z;
 };
 
-using Position = Triple<double>;
+using PositionF = Triple<double>;
+using PositionI = Triple<INT32>;
+using VectorF = Triple<double>;
 
-struct FaceNode
-{
-    int v;
-    int vt;
-    int vn;
-};
-
-struct BoundingBox
-{
-    double xmin;
-    double xmax;
-    double ymin;
-    double ymax;
-    double zmin;
-    double zmax;
-
-    BoundingBox() : xmin(DBL_MAX), xmax(DBL_MIN),
-                    ymin(DBL_MAX), ymax(DBL_MIN),
-                    zmin(DBL_MAX), zmax(DBL_MIN) { }
-};
+//struct PositionIIF
+//{
+//    int x;
+//    int y;
+//    double z;
+//};
 
 class ObjModel
 {
 public:
     void LoadFromObjFile(const std::wstring &filePath);
+
     RECT GetBoundingRect() const { return m_boundingRect; }
-    void Init();
 
     // width: screen window width in pixel
     // height: screen window height in pixel
     // scaleFactor: object scale factor on x and y axes
-    void ScaleModel(LONG width, LONG height, double scaleFactor = 1.0);
+    void SetModelScale(LONG width, LONG height, double scaleFactor = 1.0);
+
+    void SetBuffer(OffscreenBuffer &buffer);
 
 private:
     std::wstring m_filePath;
@@ -60,12 +47,103 @@ private:
     // right-hand coordinate system, sequentially numbered, starting with 1
     // This numbering sequence continues even when vertex data is separated by
     // other data.
-    std::vector<Position> m_vertices;  // geometric vertices
-    std::vector<Position> m_vertexNormals;
+    std::vector<PositionF> m_vertices;  // geometric vertices
+    std::vector<PositionF> m_vertexNormals;
+
+    std::vector<PositionF> m_scaledVertices;
+    //std::vector<double> m_scaledDepth;  // normalize z coordinate, range [0, 1]
+
+    double m_scale = 1.0;  // Model scale factor
+
+    INT32 Pixelate(double pos);
+
+    struct FaceNode
+    {
+        int v;
+        int vt;
+        int vn;
+    };
 
     std::vector<std::vector<FaceNode>> m_faces;
 
+    struct BoundingBox
+    {
+        double xmin;
+        double xmax;
+        double ymin;
+        double ymax;
+        double zmin;
+        double zmax;
+
+        BoundingBox() : xmin(DBL_MAX), xmax(DBL_MIN),
+                        ymin(DBL_MAX), ymax(DBL_MIN),
+                        zmin(DBL_MAX), zmax(DBL_MIN)
+        { }
+    };
+
     BoundingBox m_box;
     RECT m_boundingRect{ };
+
+    template <typename T = double>
+    struct Plane
+    {
+        T a;
+        T b;
+        T c;
+        T d;
+    };
+
+    template <typename T>
+    Plane<typename T::value_type> GetPlane(T p1, T p2, T p3);
+
+    struct PlaneNode
+    {
+        Plane<> plane;
+        UINT32 id;
+        UINT32 diffy;
+        Color color;
+    };
+
+    std::vector<std::vector<PlaneNode>> m_planes;
+
+    struct EdgeNode
+    {
+        double xtop;
+        double dx;
+        UINT32 diffy;
+        UINT32 planeId;
+    };
+
+    std::vector<std::vector<EdgeNode>> m_edges;
+
+    //struct ActivePlaneNode
+    //{
+    //    Plane<> plane;
+    //    UINT32 id;
+    //    UINT32 diffy;
+    //    Color color;
+    //};
+
+    struct ActiveEdgePairNode
+    {
+        struct Edge
+        {
+            double x;
+            double dx;
+            UINT32 diffy;
+        } l, r;
+        double zl;
+        double dzx;
+        double dzy;
+        UINT32 planeId;
+    };
+
+    // Light direction vector
+    VectorF m_light{1, 1, 1};
+
+    Color planeColor = WHITE;
+
+    // Initialize plane tables and edge tables.
+    void InitTables();
 
 };

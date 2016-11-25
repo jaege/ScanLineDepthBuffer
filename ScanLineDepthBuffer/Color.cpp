@@ -9,5 +9,4 @@ Color Color::RandomColor()
     return Color{ static_cast<UINT8>(u(eng)),
                   static_cast<UINT8>(u(eng)),
                   static_cast<UINT8>(u(eng)) };
-    //return Color();
 }

@@ -14,7 +14,6 @@ public:
     LRESULT HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
     void OpenObjFile();
-    void InitObject();
 
 private:
     OffscreenBuffer m_buffer;

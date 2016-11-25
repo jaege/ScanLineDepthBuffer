@@ -30,9 +30,10 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
             LONG height = rc.bottom - rc.top;
             m_buffer.Resize(width, height);
             // TODO(jaege): use m_objModel set m_buffer
-            m_objModel.ScaleModel(width, height, 0.95);
-            m_buffer.DebugDrawBoundingRect(m_objModel.GetBoundingRect(),
-                                           Color());
+            m_objModel.SetModelScale(width, height, 0.95);
+            //m_buffer.DebugDarwRandomPicture();
+            m_objModel.SetBuffer(m_buffer);
+            m_buffer.DebugDrawBoundingRect(m_objModel.GetBoundingRect(), BLUE);
         }
         return 0;
 
@@ -74,6 +75,8 @@ void MainWindow::OpenObjFile()
 
             pFileOpen->SetTitle(L"请选择要打开的 obj 文件");
 
+            // BUG(jaege): The following line is very slow. It takes about
+            //     5 seconds after choose file in the dialog to continue.
             hr = pFileOpen->Show(NULL);
 
             if (SUCCEEDED(hr))
@@ -127,9 +130,4 @@ void MainWindow::OpenObjFile()
         DebugPrint(L"CoInitializeEx Failed.");
         std::abort();
     }
-}
-
-void MainWindow::InitObject()
-{
-    m_objModel.Init();
 }

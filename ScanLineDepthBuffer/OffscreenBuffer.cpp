@@ -33,39 +33,8 @@ void OffscreenBuffer::Resize(INT32 width, INT32 height)
 
     if (m_memory)
     {
-        // TODO(jaege): temporary
-        Render();
-    }
-}
-
-void OffscreenBuffer::Render()
-{
-    // TODO(jaege): Below code is just for fun, I will implement scan-line
-    //              z-buffer algorithm here in future.
-
-    UINT8 *row = (UINT8 *)m_memory;
-    for (int y = 0; y < m_height; ++y)
-    {
-        UINT32 *pixel = (UINT32 *)row;
-        for (int x = 0; x < m_width; ++x)
-        {
-            *pixel++ = (((UINT8)(x)) << 16) |  // Red
-                       (((UINT8)(y)) << 8) |  // Green
-                       (UINT8)(x + y);  // Blue
-        }
-        row += m_pitch;
-    }
-
-    int j = GetHeight() / 2;
-    for (int i = GetWidth() / 2; i < GetWidth(); ++i)
-    {
-        SetPixel(i, j++%GetHeight(), Color::RandomColor());
-    }
-
-    std::vector<Color> color(GetWidth(), Color::RandomColor());
-    for (int i = GetHeight() / 5; i < GetHeight() * 2 / 5; ++i)
-    {
-        SetRow(i, color);
+        // TODO(jaege): clear memory
+        //DebugDarwRandomPicture();
     }
 }
 
@@ -75,7 +44,7 @@ void OffscreenBuffer::SetPixel(INT32 x, INT32 y, const Color &color)
     UINT32 *pixel = (UINT32 *)((UINT8 *)m_memory +
                                x * BYTES_PER_PIXEL + y * m_pitch);
     UINT32 *pixel2 = (UINT32 *)m_memory + x + y * m_width;
-    *pixel = color.GetColor();
+    *pixel = color.GetColorCode();
 }
 
 void OffscreenBuffer::SetRow(INT32 y, const std::vector<Color> &row)
@@ -83,7 +52,7 @@ void OffscreenBuffer::SetRow(INT32 y, const std::vector<Color> &row)
     assert(y >= 0 && y < m_height && row.size() == m_width);
     UINT32 *pixel = (UINT32 *)((UINT8 *)m_memory + y * m_pitch);
     for (const Color &c : row)
-        *pixel++ = c.GetColor();
+        *pixel++ = c.GetColorCode();
 }
 
 void OffscreenBuffer::OnPaint(HDC hdc, LONG width, LONG height)
@@ -112,3 +81,24 @@ void OffscreenBuffer::DebugDrawBoundingRect(RECT rect, const Color &color)
             if (x >= 0 && x < m_width)
                 SetPixel(x, rect.bottom, color);
 }
+
+void OffscreenBuffer::DebugDarwRandomPicture()
+{
+    // NOTE(jaege): Below code is just for fun.
+    UINT8 *row = (UINT8 *)m_memory;
+    for (int y = 0; y < m_height; ++y)
+    {
+        UINT32 *pixel = (UINT32 *)row;
+        for (int x = 0; x < m_width; ++x)
+        {
+            *pixel++ = (((UINT8)(x)) << 16) |  // Red
+                       (((UINT8)(y)) << 8) |  // Green
+                       (UINT8)(x + y);  // Blue
+            // TODO(jaege): the code below is really slow, find why.
+            //     It takes about 9 seconds to draw a 1000*500 picture.
+            //*pixel++ = Color::RandomColor().GetColorCode();
+        }
+        row += m_pitch;
+    }
+}
+

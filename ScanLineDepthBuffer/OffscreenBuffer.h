@@ -17,6 +17,7 @@ public:
     void OnPaint(HDC hdc, LONG width, LONG height);
 
     void DebugDrawBoundingRect(RECT rect, const Color &color);
+    void DebugDarwRandomPicture();
 
     INT32 GetWidth() const { return m_width; }
     INT32 GetHeight() const { return m_height; }
@@ -47,5 +48,4 @@ private:
     INT32 m_height;
     INT32 m_pitch;
 
-    void Render();
 };
