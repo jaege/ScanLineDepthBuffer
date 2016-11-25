@@ -29,7 +29,7 @@ void ObjModel::LoadFromObjFile(const std::wstring & filePath)
 
     if (!fileStream.is_open())
     {
-        DebugPrint(L"[ObjModel::LoadFromObjFile] Fail to open file: %s",
+        DebugPrint(L"[WRN] ObjModel::LoadFromObjFile : Fail to open file: %s",
                    m_filePath);
         std::abort();
     }
@@ -97,7 +97,7 @@ void ObjModel::LoadFromObjFile(const std::wstring & filePath)
                 }
                 if (face.size() < 3)
                 {
-                    DebugPrint(L"Error: Face has less than three vertices.");
+                    DebugPrint(L"[ERR] Face has less than three vertices.");
                     std::abort();
                 }
                 // Add the first vertex to the last, used for generating
@@ -121,8 +121,6 @@ void ObjModel::LoadFromObjFile(const std::wstring & filePath)
             break;
         }
     }
-
-    // fileStream goes out of scope
 }
 
 void ObjModel::SetModelScale(LONG width, LONG height, double scaleFactor)
@@ -179,7 +177,7 @@ void ObjModel::SetModelScale(LONG width, LONG height, double scaleFactor)
     // Ensure that the whole object can be seen in screen when scaleFactor <= 1.
     m_scale = min(xScale, yScale) * scaleFactor;
 
-    // Round to the nearest integer
+    // Round to the nearest integer.
     m_boundingRect.left = Pixelate((m_box.xmin -
         (m_box.xmin + m_box.xmax) / 2) * m_scale + 1.0 * width / 2);  // xmin'
     m_boundingRect.right = Pixelate((m_box.xmax -
@@ -212,9 +210,12 @@ void ObjModel::SetModelScale(LONG width, LONG height, double scaleFactor)
 template <typename T>
 ObjModel::Plane<typename T::value_type> ObjModel::GetPlane(T p1, T p2, T p3)
 {
-    T::value_type a = (p2.y - p1.y) * (p3.z - p1.z) - (p3.y - p1.y) * (p2.z - p1.z);
-    T::value_type b = (p3.x - p1.x) * (p2.z - p1.z) - (p2.x - p1.x) * (p3.z - p1.z);
-    T::value_type c = (p2.x - p1.x) * (p3.y - p1.y) - (p3.x - p1.x) * (p2.y - p1.y);
+    T::value_type a = (p2.y - p1.y) * (p3.z - p1.z) -
+                      (p3.y - p1.y) * (p2.z - p1.z);
+    T::value_type b = (p3.x - p1.x) * (p2.z - p1.z) -
+                      (p2.x - p1.x) * (p3.z - p1.z);
+    T::value_type c = (p2.x - p1.x) * (p3.y - p1.y) -
+                      (p3.x - p1.x) * (p2.y - p1.y);
     T::value_type d = -(p1.x * a + p1.y * b + p1.z * c);
     T::value_type n = std::sqrt(a * a + b * b + c * c);
     assert(n != 0);
@@ -239,16 +240,14 @@ void ObjModel::InitTables()
         PlaneNode pn;
 
         // Always use first 3 vertices to calculate the plane equation.
-        // face[i].v is vertex id
+        // face[i].v is vertex id.
         pn.plane = GetPlane(m_scaledVertices[face[0].v],
                             m_scaledVertices[face[1].v],
                             m_scaledVertices[face[2].v]);
 
-        // Ignore planes that parallel to z axis
+        // Ignore planes that parallel to z axis.
         Double lhs(pn.plane.c), rhs(0.0);
-        if (lhs.AlmostEquals(rhs))
-        //if (pn.plane.c < DBL_EPSILON && pn.plane.c > -DBL_EPSILON)
-            continue;
+        if (lhs.AlmostEquals(rhs)) continue;
 
         pn.id = pid;
 
@@ -256,11 +255,10 @@ void ObjModel::InitTables()
         double ybottom = m_boundingRect.top - 1;
         for (int vid = 0; vid != face.size() - 1; ++vid)
         {
-            const auto &p1 = m_scaledVertices[face[vid].v];  // vertex
-            const auto &p2 = m_scaledVertices[face[vid + 1].v];  // vertex
+            const auto &p1 = m_scaledVertices[face[vid].v];
+            const auto &p2 = m_scaledVertices[face[vid + 1].v];
 
             // Ignore horizontal edge
-            //if (p1.y - p2.y < DBL_EPSILON && p1.y - p2.y > -DBL_EPSILON)
             if (Pixelate(p1.y) == Pixelate(p2.y))
             {
                 if (ytop > p1.y) ytop = p1.y;
@@ -293,12 +291,13 @@ void ObjModel::InitTables()
         }
 
         pn.diffy = Pixelate(ybottom) - Pixelate(ytop) + 1;
+        // The plane up to this line of code should not parallel to z axis.
+        assert(pn.diffy != 0);
 
         // Calculate color from the angle of face normal n, which is
         // n(a, b, c), and the light direction normal l(i, j, k). The smaller
         // the angle is, the light the color is.
         //     n(a, b, c) dot l(i, j, k) = |n|*|l|*cos(theta)
-        // BUG(jaege): cone.obj color of half triangles are incorrect. 
         double costheta = (pn.plane.a * m_light.x + pn.plane.b * m_light.y +
                            pn.plane.c * m_light.z) * lightN;
         if (costheta < 0) costheta = -costheta;
@@ -307,9 +306,7 @@ void ObjModel::InitTables()
         pn.color.green = (UINT8)std::lround(planeColor.green * costheta);
         pn.color.blue = (UINT8)std::lround(planeColor.blue * costheta);
 
-        // Ingore planes that parallel to z axis.
-        if (pn.diffy != 0)
-            m_planes[Pixelate(ytop) - m_boundingRect.top].push_back(pn);
+        m_planes[Pixelate(ytop) - m_boundingRect.top].push_back(pn);
     }
 }
 
@@ -321,7 +318,6 @@ void ObjModel::SetBuffer(OffscreenBuffer &buffer)
     std::vector<ActiveEdgePairNode> activeEdgePairs;
     INT32 height = buffer.GetHeight();
     INT32 width = buffer.GetWidth();
-    //Color background = Color::RandomColor();
     Color background = BLACK;
     for (INT32 y = 0; y < height; ++y)
     {
@@ -330,151 +326,197 @@ void ObjModel::SetBuffer(OffscreenBuffer &buffer)
 
         if (y >= m_boundingRect.top && y <= m_boundingRect.bottom)
         {
-        // Add planes from m_planes to activePlanes
-        if (m_planes[y - m_boundingRect.top].size() > 0)
-        {
-            for (const auto &pl : m_planes[y - m_boundingRect.top])
+            // Add planes from m_planes to activePlanes.
+            if (m_planes[y - m_boundingRect.top].size() > 0)
             {
-                activePlanes.push_back(pl);
-
-                // Add edge pair of newly added plane to activeEdgePairs
-                std::vector<EdgeNode> edges;
-                for (const auto &edge : m_edges[y - m_boundingRect.top])
+                for (const auto &pl : m_planes[y - m_boundingRect.top])
                 {
-                    if (edge.planeId == pl.id)
-                        edges.push_back(edge);
-                }
-                // There should be two and only two edges, otherwise it's a bug.
-                // BUG(jaege): bunny.obj flowers.obj assertion fail.
-                assert(edges.size() == 2);
-                Double lhs(edges[0].xtop), rhs(edges[1].xtop);
-                if (edges[0].xtop > edges[1].xtop ||
-                    lhs.AlmostEquals(rhs) && edges[0].dx > edges[1].dx)
-                    std::swap(edges[0], edges[1]);
+                    activePlanes.push_back(pl);
 
-                ActiveEdgePairNode epn;
-                epn.l.x = edges[0].xtop;
-                epn.l.dx = edges[0].dx;
-                epn.l.diffy = edges[0].diffy;
-                epn.r.x = edges[1].xtop;
-                epn.r.dx = edges[1].dx;
-                epn.r.diffy = edges[1].diffy;
-                // NOTE(jaege): zl may lose some precision because y is rounded.
-                // TODO(jaege): Test if this is ok.
-                epn.zl = -(pl.plane.a * edges[0].xtop + pl.plane.b * y +
-                           pl.plane.d) / pl.plane.c;
-                epn.dzx = -pl.plane.a / pl.plane.c;
-                epn.dzy = -pl.plane.b / pl.plane.c;
-                epn.planeId = pl.id;
-
-                activeEdgePairs.push_back(epn);
-            }
-        }
-
-        for (auto epn = activeEdgePairs.begin(); epn != activeEdgePairs.end(); )
-        {
-            INT32 xl = Pixelate(epn->l.x);
-            INT32 xr = Pixelate(epn->r.x);
-            double z = epn->zl;
-            for (INT32 x = xl; x <= xr; ++x)
-            {
-                // BUG(jaege): torus.obj depthBuffer index out of upper range
-                if (z < depthBuffer[x])
-                {
-                    // update depthBuffer and frameBuffer
-                    depthBuffer[x] = z;
-                    for (const auto &pl : activePlanes)
+                    // Add edge pair of newly added plane to activeEdgePairs.
+                    std::vector<EdgeNode> edges;
+                    for (const auto &edge : m_edges[y - m_boundingRect.top])
                     {
-                        if (pl.id == epn->planeId)
+                        if (edge.planeId == pl.id)
+                            edges.push_back(edge);
+                    }
+                    // There should be even number of edges.
+                    assert(edges.size() % 2 == 0);
+                    // BUG(jaege): teapot_wt.obj desk.obj flowers.obj bunny.obj etc.
+                    //      vector edges.size() is 0, index out of range. Find out why.
+                    if (edges.size() == 0)
+                    {
+                        DebugPrint(L"[ERR] Can't find edge pair of plane "
+                                   "#%d at y=%d.", pl.id, y);
+                        continue;
+                    }
+
+                    // TODO(jaege): handle the concave polygon case.
+                    Double lhs(edges[0].xtop), rhs(edges[1].xtop);
+                    if (edges[0].xtop > edges[1].xtop ||
+                        lhs.AlmostEquals(rhs) && edges[0].dx > edges[1].dx)
+                        std::swap(edges[0], edges[1]);
+
+                    ActiveEdgePairNode epn;
+                    epn.l.x = edges[0].xtop;
+                    epn.l.dx = edges[0].dx;
+                    epn.l.diffy = edges[0].diffy;
+                    epn.r.x = edges[1].xtop;
+                    epn.r.dx = edges[1].dx;
+                    epn.r.diffy = edges[1].diffy;
+                    // NOTE(jaege): zl may lose some precision since y is rounded.
+                    // TODO(jaege): Test if this is ok.
+                    epn.zl = -(pl.plane.a * edges[0].xtop + pl.plane.b * y +
+                               pl.plane.d) / pl.plane.c;
+                    epn.dzx = -pl.plane.a / pl.plane.c;
+                    epn.dzy = -pl.plane.b / pl.plane.c;
+                    epn.planeId = pl.id;
+
+                    activeEdgePairs.push_back(epn);
+                }
+            }
+
+            for (auto epn = activeEdgePairs.begin(); epn != activeEdgePairs.end(); )
+            {
+                // BUG(jaege): cube.obj cone.obj etc. edges are aliased.
+                // BUG(jaege): torus.obj teapot.obj torusknot.obj strange lines.
+                INT32 xl = Pixelate(epn->l.x);
+                INT32 xr = Pixelate(epn->r.x);
+                double z = epn->zl;
+                for (INT32 x = xl; x <= xr; ++x)
+                {
+                    // BUG(jaege): flowers.obj
+                    //     vector depthBuffer[] index out of upper range, negative x.
+                    // Ignore part of lines that go out of screen border.
+                    if (x >= width)
+                    {
+                        break;
+                    }
+                    if (x >= 0 && z < depthBuffer[x])
+                    {
+                        // Update depthBuffer and frameBuffer.
+                        depthBuffer[x] = z;
+                        bool foundPlane = false;
+                        for (const auto &pl : activePlanes)
                         {
-                            frameBuffer[x] = pl.color;
+                            if (pl.id == epn->planeId)
+                            {
+                                frameBuffer[x] = pl.color;
+                                foundPlane = true;
+                                break;
+                            }
+                        }
+                        if (!foundPlane)
+                        {
+                            // BUG(jaege): find out why.
+                            DebugPrint(L"[ERR] Can't find plane #%d for edge "
+                                       "pair at x=%d, y=%d.",
+                                       epn->planeId, x, y);
+                        }
+                    }
+
+                    z += epn->dzx;
+                }
+                // Update activeEdgePairs.
+                --epn->l.diffy;
+                --epn->r.diffy;
+                // Replace finished edge/edge pairs in active EdgePairs.
+                // BUG(jaege): when the polygon is concave, below may have bugs.
+                if (epn->l.diffy == 0 && epn->r.diffy == 0)
+                {
+                    std::vector<EdgeNode> edges;
+                    for (const auto &edge : m_edges[y - m_boundingRect.top])
+                    {
+                        if (edge.planeId == epn->planeId)
+                            edges.push_back(edge);
+                    }
+                    assert(edges.size() == 2 || edges.size() == 0);
+                    if (edges.size() == 2)
+                    {
+                        Double lhs(edges[0].xtop), rhs(edges[1].xtop);
+                        if (edges[0].xtop > edges[1].xtop ||
+                            lhs.AlmostEquals(rhs) && edges[0].dx > edges[1].dx)
+                            std::swap(edges[0], edges[1]);
+                        epn->l.x = edges[0].xtop;
+                        epn->l.dx = edges[0].dx;
+                        epn->l.diffy = edges[0].diffy;
+                        epn->r.x = edges[1].xtop;
+                        epn->r.dx = edges[1].dx;
+                        epn->r.diffy = edges[1].diffy;
+                        // TODO(jaege): think whether epn->zl need be updated.
+                    }
+                    else
+                    {
+                        epn = activeEdgePairs.erase(epn);
+                        continue;
+                    }
+
+                }
+                else if (epn->l.diffy == 0)
+                {
+                    bool foundEdge = false;
+                    for (const auto &edge : m_edges[y - m_boundingRect.top])
+                    {
+                        if (edge.planeId == epn->planeId)
+                        {
+                            epn->l.x = edge.xtop;
+                            epn->l.dx = edge.dx;
+                            epn->l.diffy = edge.diffy;
+                            foundEdge = true;
                             break;
                         }
                     }
+                    if (!foundEdge)
+                    {
+                        // BUG(jaege): find out why.
+                        DebugPrint(L"[ERR] Can't find left edge of plane #%d "
+                                   "at y=%d.", epn->planeId, y);
+                    }
                 }
-
-                z += epn->dzx;
+                else if (epn->r.diffy == 0)
+                {
+                    bool foundEdge = false;
+                    for (const auto &edge : m_edges[y - m_boundingRect.top])
+                    {
+                        if (edge.planeId == epn->planeId)
+                        {
+                            epn->r.x = edge.xtop;
+                            epn->r.dx = edge.dx;
+                            epn->r.diffy = edge.diffy;
+                            foundEdge = true;
+                            break;
+                        }
+                    }
+                    if (!foundEdge)
+                    {
+                        // BUG(jaege): find out why.
+                        DebugPrint(L"[ERR] Can't find right edge of plane #%d "
+                                   "at y=%d.", epn->planeId, y);
+                    }
+                }
+                epn->l.x += epn->l.dx;
+                epn->r.x += epn->r.dx;
+                epn->zl += epn->dzx * epn->l.dx + epn->dzy;
+                ++epn;
             }
-            // update activeEdgePairs
-            --epn->l.diffy;
-            --epn->r.diffy;
-            // replace finished edge/edge pairs in active EdgePairs
-            if (epn->l.diffy == 0 && epn->r.diffy == 0)
+
+            // Update activePlanes.
+            for (auto it = activePlanes.begin(); it != activePlanes.end(); )
             {
-                std::vector<EdgeNode> edges;
-                for (const auto &edge : m_edges[y - m_boundingRect.top])
+                if (--it->diffy == 0)
                 {
-                    if (edge.planeId == epn->planeId)
-                        edges.push_back(edge);
-                }
-                assert(edges.size() == 2 || edges.size() == 0);
-                if (edges.size() == 2)
-                {
-                    if (edges[0].xtop > edges[1].xtop)
-                        std::swap(edges[0], edges[1]);
-                    epn->l.x = edges[0].xtop;
-                    epn->l.dx = edges[0].dx;
-                    epn->l.diffy = edges[0].diffy;
-                    epn->r.x = edges[1].xtop;
-                    epn->r.dx = edges[1].dx;
-                    epn->r.diffy = edges[1].diffy;
+                    it = activePlanes.erase(it);
                 }
                 else
                 {
-                    epn = activeEdgePairs.erase(epn);
-                    continue;
-                }
-
-            }
-            else if (epn->l.diffy == 0)
-            {
-                for (const auto &edge : m_edges[y - m_boundingRect.top])
-                {
-                    if (edge.planeId == epn->planeId)
-                    {
-                        epn->l.x = edge.xtop;
-                        epn->l.dx = edge.dx;
-                        epn->l.diffy = edge.diffy;
-                        break;
-                    }
+                    ++it;
                 }
             }
-            else if (epn->r.diffy == 0)
-            {
-                for (const auto &edge : m_edges[y - m_boundingRect.top])
-                {
-                    if (edge.planeId == epn->planeId)
-                    {
-                        epn->r.x = edge.xtop;
-                        epn->r.dx = edge.dx;
-                        epn->r.diffy = edge.diffy;
-                        break;
-                    }
-                }
-            }
-            epn->l.x += epn->l.dx;
-            epn->r.x += epn->r.dx;
-            epn->zl += epn->dzx * epn->l.dx + epn->dzy;
-            ++epn;
-        }
-
-        // update activePlanes
-        for (auto it = activePlanes.begin(); it != activePlanes.end(); )
-        {
-            if (--it->diffy == 0)
-            {
-                it = activePlanes.erase(it);
-            }
-            else
-            {
-                ++it;
-            }
-        }
         }
         buffer.SetRow(y, frameBuffer);
     }
 
-    // Debug, set all vertices
+    // For debug purpose, draw all vertices.
     for (const auto & v : m_scaledVertices)
         buffer.SetPixel(Pixelate(v.x), Pixelate(v.y), GREEN);
 }

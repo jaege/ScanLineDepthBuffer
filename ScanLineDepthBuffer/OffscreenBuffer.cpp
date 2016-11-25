@@ -27,7 +27,7 @@ void OffscreenBuffer::Resize(INT32 width, INT32 height)
 
     if (!m_memory && width != 0 && height != 0)
     {
-        DebugPrint(L"VirtualAlloc Failed.");
+        DebugPrint(L"[WRN] VirtualAlloc Failed.");
         std::abort();
     }
 

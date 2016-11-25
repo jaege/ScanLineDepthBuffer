@@ -90,44 +90,50 @@ void MainWindow::OpenObjFile()
 
                     if (SUCCEEDED(hr))
                     {
-                        DebugPrint(L"%s", pszFilePath);
+                        DebugPrint(L"[INF] Open obj file: %s", pszFilePath);
                         // TODO(jaege): Load file to m_objModel.
 
                         m_objModel.LoadFromObjFile(pszFilePath);
 
+                        const UINT32 MAX_CHARS = 1024;
+                        WCHAR s_buffer[MAX_CHARS];
+                        WCHAR windowTitle[MAX_CHARS];
+                        GetWindowText(m_hwnd, windowTitle, GetWindowTextLength(m_hwnd) + 1);
+                        swprintf(s_buffer, MAX_CHARS, L"%s - %s", windowTitle, pszFilePath);
+                        SetWindowText(m_hwnd, s_buffer);
 
                         CoTaskMemFree(pszFilePath);
                     }
                     else
                     {
-                        DebugPrint(L"pItem->GetDisplayName Failed.");
+                        DebugPrint(L"[WRN] pItem->GetDisplayName Failed.");
                         std::abort();
                     }
                     pItem->Release();
                 }
                 else
                 {
-                    DebugPrint(L"pFileOpen->GetResult Failed.");
+                    DebugPrint(L"[WRN] pFileOpen->GetResult Failed.");
                     std::abort();
                 }
             }
             else
             {
-                DebugPrint(L"pFileOpen->Show Failed.");
+                DebugPrint(L"[WRN] pFileOpen->Show Failed.");
                 std::abort();
             }
             pFileOpen->Release();
         }
         else
         {
-            DebugPrint(L"CoCreateInstance Failed.");
+            DebugPrint(L"[WRN] CoCreateInstance Failed.");
             std::abort();
         }
         CoUninitialize();
     }
     else
     {
-        DebugPrint(L"CoInitializeEx Failed.");
+        DebugPrint(L"[WRN] CoInitializeEx Failed.");
         std::abort();
     }
 }

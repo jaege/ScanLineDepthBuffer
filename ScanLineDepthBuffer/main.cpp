@@ -15,7 +15,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
     if (!win.Create(L"扫描线 Z-Buffer 算法演示", WS_OVERLAPPEDWINDOW))
     {
-        DebugPrint(L"Error: Fail to create MainWindow.");
+        DebugPrint(L"[ERR] Fail to create MainWindow.");
         std::abort();
     }
 
