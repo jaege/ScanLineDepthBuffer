@@ -12,16 +12,15 @@
 
 void ObjModel::LoadFromObjFile(const std::wstring & filePath)
 {
-    /* NOTE(jaege): Only polygonal objects are partially supported, free-form
-     *              objects are not supported.
-     *
-     * File format reference: http://paulbourke.net/dataformats/obj/
-     *
-     * Supported keyword (in parentheses):
-     *     geometric vertices (v)
-     *     vertex normals (vn)
-     *     face (f)
-     */ 
+    // NOTE(jaege): Only polygonal objects are partially supported, free-form
+    //              objects are not supported.
+    //
+    // File format reference: http://paulbourke.net/dataformats/obj/
+    //
+    // Supported keyword (in parentheses):
+    //     geometric vertices (v)
+    //     vertex normals (vn)
+    //     face (f)
 
     m_filePath = filePath;
 
@@ -125,54 +124,48 @@ void ObjModel::LoadFromObjFile(const std::wstring & filePath)
 
 void ObjModel::SetModelScale(LONG width, LONG height, double scaleFactor)
 {
-    /* Transform object from object coordinate to screen coordinate, and move
-     * it to the center of the screen space.
-     *
-     *     xScale = width / (xmax - xmin)
-     *     yScale = height / (ymax - ymin)
-     *     scale = min(xScale, yScale) * scaleFactor
-     *
-     *     x' = (x - (xmin + xmax) / 2) * scale + width / 2
-     *     y' = ((ymin + ymax) / 2 - y) * scale + height / 2
-     *     z' = (zmax - z) * scale
-     *
-     * Depth is the z axis normalized to [0, 1].
-     *     depth = (zmax - z) / (zmax - zmin)
-     *
-     * Old coordinate: (object space)
-     *
-     *        y ^
-     *          |
-     *          |
-     *          |
-     *          |
-     *          +---------> x
-     *         /
-     *        /
-     *       /
-     *      /
-     *     v z
-     *
-     * New coordinate: (screen space, x' and y' in pixel)
-     *
-     *               ^ z'
-     *              /
-     *             /
-     *            /
-     *           /
-     *          +---------> x'
-     *          |
-     *          |
-     *          |
-     *          |
-     *       y' v
-     *
-     */
+    // Transform object from object coordinate to screen coordinate, and move
+    // it to the center of the screen space.
+    //
+    //     xScale = width / (xmax - xmin)
+    //     yScale = height / (ymax - ymin)
+    //     scale = min(xScale, yScale) * scaleFactor
+    //
+    //     x' = (x - (xmin + xmax) / 2) * scale + width / 2
+    //     y' = ((ymin + ymax) / 2 - y) * scale + height / 2
+    //     z' = (zmax - z) * scale
+    //
+    // Old coordinate: (object space)
+    //
+    //        y ^
+    //          |
+    //          |
+    //          |
+    //          |
+    //          +---------> x
+    //         /
+    //        /
+    //       /
+    //      /
+    //     v z
+    //
+    // New coordinate: (screen space, x' and y' in pixel)
+    //
+    //               ^ z'
+    //              /
+    //             /
+    //            /
+    //           /
+    //          +---------> x'
+    //          |
+    //          |
+    //          |
+    //          |
+    //       y' v
 
     assert(scaleFactor > 0);
     double xScale = 1.0 * width / (m_box.xmax - m_box.xmin);
     double yScale = 1.0 * height / (m_box.ymax - m_box.ymin);
-    //double zScale = 1.0 / (m_box.zmax - m_box.zmin);
 
     // Ensure that the whole object can be seen in screen when scaleFactor <= 1.
     m_scale = min(xScale, yScale) * scaleFactor;
@@ -190,20 +183,12 @@ void ObjModel::SetModelScale(LONG width, LONG height, double scaleFactor)
     m_scaledVertices.clear();
     for (auto &v : m_vertices)
     {
-        //INT32 xnew = std::lround((v.x - (m_box.xmin + m_box.xmax) / 2) *
-        //                         m_scale + 1.0 * width / 2);
-        //INT32 ynew = std::lround(((m_box.ymin + m_box.ymax) / 2 - v.y) *
-        //                         m_scale + 1.0 * height / 2);
-        //INT32 znew = std::lround((m_box.zmax - v.z) * m_scale);
         double xnew = (v.x - (m_box.xmin + m_box.xmax) / 2) *
                                  m_scale + 1.0 * width / 2;
         double ynew = ((m_box.ymin + m_box.ymax) / 2 - v.y) *
                                  m_scale + 1.0 * height / 2;
         double znew = (m_box.zmax - v.z) * m_scale;
         m_scaledVertices.push_back({xnew, ynew, znew});
-
-        //double depth = (m_box.zmax - v.z) * zScale;
-        //m_scaledDepth.push_back(depth);
     }
 }
 
@@ -258,7 +243,7 @@ void ObjModel::InitTables()
             const auto &p1 = m_scaledVertices[face[vid].v];
             const auto &p2 = m_scaledVertices[face[vid + 1].v];
 
-            // Ignore horizontal edge
+            // Ignore horizontal edges.
             if (Pixelate(p1.y) == Pixelate(p2.y))
             {
                 if (ytop > p1.y) ytop = p1.y;
@@ -297,14 +282,16 @@ void ObjModel::InitTables()
         // Calculate color from the angle of face normal n, which is
         // n(a, b, c), and the light direction normal l(i, j, k). The smaller
         // the angle is, the light the color is.
+        //
         //     n(a, b, c) dot l(i, j, k) = |n|*|l|*cos(theta)
+
         double costheta = (pn.plane.a * m_light.x + pn.plane.b * m_light.y +
                            pn.plane.c * m_light.z) * lightN;
         if (costheta < 0) costheta = -costheta;
 
-        pn.color.red = (UINT8)std::lround(planeColor.red * costheta);
-        pn.color.green = (UINT8)std::lround(planeColor.green * costheta);
-        pn.color.blue = (UINT8)std::lround(planeColor.blue * costheta);
+        pn.color.red = (UINT8)std::lround(m_planeColor.red * costheta);
+        pn.color.green = (UINT8)std::lround(m_planeColor.green * costheta);
+        pn.color.blue = (UINT8)std::lround(m_planeColor.blue * costheta);
 
         m_planes[Pixelate(ytop) - m_boundingRect.top].push_back(pn);
     }
@@ -342,10 +329,11 @@ void ObjModel::SetBuffer(OffscreenBuffer &buffer)
                     }
                     // There should be even number of edges.
                     assert(edges.size() % 2 == 0);
-                    // BUG(jaege): teapot_wt.obj desk.obj flowers.obj bunny.obj etc.
-                    //      vector edges.size() is 0, index out of range. Find out why.
+
                     if (edges.size() == 0)
                     {
+                        // BUG(jaege): teapot_wt.obj desk.obj flowers.obj bunny.obj etc.
+                        //      vector edges.size() is 0, index out of range. Find out why.
                         DebugPrint(L"[ERR] Can't find edge pair of plane "
                                    "#%d at y=%d.", pl.id, y);
                         continue;
@@ -385,12 +373,19 @@ void ObjModel::SetBuffer(OffscreenBuffer &buffer)
                 double z = epn->zl;
                 for (INT32 x = xl; x <= xr; ++x)
                 {
-                    // BUG(jaege): flowers.obj
-                    //     vector depthBuffer[] index out of upper range, negative x.
                     // Ignore part of lines that go out of screen border.
                     if (x >= width)
                     {
                         break;
+                    }
+                    if (x < 0)
+                    {
+                        // BUG(jaege): flowers.obj
+                        //     vector depthBuffer[] index out of upper range,
+                        //     negative x. Find out why.
+                        DebugPrint(L"[ERR] edge of plane #%d at y=%d, x=%d "
+                                   "posistion out of left boundary",
+                                   epn->planeId, y, x);
                     }
                     if (x >= 0 && z < depthBuffer[x])
                     {
@@ -439,10 +434,10 @@ void ObjModel::SetBuffer(OffscreenBuffer &buffer)
                             std::swap(edges[0], edges[1]);
                         epn->l.x = edges[0].xtop;
                         epn->l.dx = edges[0].dx;
-                        epn->l.diffy = edges[0].diffy;
+                        epn->l.diffy = edges[0].diffy - 1;
                         epn->r.x = edges[1].xtop;
                         epn->r.dx = edges[1].dx;
-                        epn->r.diffy = edges[1].diffy;
+                        epn->r.diffy = edges[1].diffy - 1;
                         // TODO(jaege): think whether epn->zl need be updated.
                     }
                     else
@@ -461,7 +456,7 @@ void ObjModel::SetBuffer(OffscreenBuffer &buffer)
                         {
                             epn->l.x = edge.xtop;
                             epn->l.dx = edge.dx;
-                            epn->l.diffy = edge.diffy;
+                            epn->l.diffy = edge.diffy - 1;
                             foundEdge = true;
                             break;
                         }
@@ -482,7 +477,7 @@ void ObjModel::SetBuffer(OffscreenBuffer &buffer)
                         {
                             epn->r.x = edge.xtop;
                             epn->r.dx = edge.dx;
-                            epn->r.diffy = edge.diffy;
+                            epn->r.diffy = edge.diffy - 1;
                             foundEdge = true;
                             break;
                         }
@@ -517,8 +512,8 @@ void ObjModel::SetBuffer(OffscreenBuffer &buffer)
     }
 
     // For debug purpose, draw all vertices.
-    for (const auto & v : m_scaledVertices)
-        buffer.SetPixel(Pixelate(v.x), Pixelate(v.y), GREEN);
+    //for (const auto & v : m_scaledVertices)
+    //    buffer.SetPixel(Pixelate(v.x), Pixelate(v.y), GREEN);
 }
 
 INT32 ObjModel::Pixelate(double pos)

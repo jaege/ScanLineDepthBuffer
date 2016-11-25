@@ -28,8 +28,8 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
             GetClientRect(m_hwnd, &rc);
             LONG width = rc.right - rc.left;
             LONG height = rc.bottom - rc.top;
+
             m_buffer.Resize(width, height);
-            // TODO(jaege): use m_objModel set m_buffer
             m_objModel.SetModelScale(width, height, 0.95);
             //m_buffer.DebugDarwRandomPicture();
             m_objModel.SetBuffer(m_buffer);
@@ -76,7 +76,8 @@ void MainWindow::OpenObjFile()
             pFileOpen->SetTitle(L"请选择要打开的 obj 文件");
 
             // BUG(jaege): The following line is very slow. It takes about
-            //     5 seconds after choose file in the dialog to continue.
+            //     5 seconds after choose file in the dialog to continue in
+            //     debug compliation.
             hr = pFileOpen->Show(NULL);
 
             if (SUCCEEDED(hr))
@@ -98,8 +99,10 @@ void MainWindow::OpenObjFile()
                         const UINT32 MAX_CHARS = 1024;
                         WCHAR s_buffer[MAX_CHARS];
                         WCHAR windowTitle[MAX_CHARS];
-                        GetWindowText(m_hwnd, windowTitle, GetWindowTextLength(m_hwnd) + 1);
-                        swprintf(s_buffer, MAX_CHARS, L"%s - %s", windowTitle, pszFilePath);
+                        GetWindowText(m_hwnd, windowTitle,
+                                      GetWindowTextLength(m_hwnd) + 1);
+                        swprintf(s_buffer, MAX_CHARS, L"%s - %s",
+                                 windowTitle, pszFilePath);
                         SetWindowText(m_hwnd, s_buffer);
 
                         CoTaskMemFree(pszFilePath);

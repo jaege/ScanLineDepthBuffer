@@ -24,28 +24,26 @@ public:
 
 private:
     BITMAPINFO m_info;
-    /* Memory Layout:
-     *     From top to bottom, from left to right.
-     *
-     *     Position (x, y):
-     *         
-     *      4 bytes   0       1       2 .. x .. width-1
-     *      1  byte   0 1 2 3 4 5 6 7 8 ..   .. pitch-4 pitch-3 pitch-2 pitch-1
-     *     ----------------------------------------------------------------
-     *            0   b g r x b g r x b ..   .. b       g       r       x
-     *            1   b g r x b g r x b ..   .. b       g       r       x
-     *            2   b g r x b g r x b ..   .. b       g       r       x
-     *            3   b g r x b g r x b ..   .. b       g       r       x
-     *            .   .
-     *            .   .
-     *            y                        o
-     *            .   .
-     *            .   .
-     *     height-1   b g r x b g r x b ..   .. b       g       r       x
-     */
+    // Memory Layout:
+    //     From top to bottom, from left to right.
+    //
+    //     Position (x, y):
+    //         
+    //      4 bytes   0       1       2 .. x .. width-1
+    //      1  byte   0 1 2 3 4 5 6 7 8 ..   .. pitch-4 pitch-3 pitch-2 pitch-1
+    //     ----------------------------------------------------------------
+    //            0   b g r x b g r x b ..   .. b       g       r       x
+    //            1   b g r x b g r x b ..   .. b       g       r       x
+    //            2   b g r x b g r x b ..   .. b       g       r       x
+    //            3   b g r x b g r x b ..   .. b       g       r       x
+    //            .   .
+    //            .   .
+    //            y                        o
+    //            .   .
+    //            .   .
+    //     height-1   b g r x b g r x b ..   .. b       g       r       x
     LPVOID m_memory;
     INT32 m_width;
     INT32 m_height;
     INT32 m_pitch;
-
 };

@@ -18,5 +18,4 @@ public:
 private:
     OffscreenBuffer m_buffer;
     ObjModel m_objModel;
-
 };

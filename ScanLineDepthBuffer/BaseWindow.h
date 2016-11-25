@@ -19,11 +19,10 @@ public:
                              reinterpret_cast<LONG_PTR>(pThis));
 
             pThis->m_hwnd = hwnd;
-            /* NOTE(jaege): The above line of code is needed when using
-             * `WM_NCCREATE` message to get the pointer to the concrete class
-             * object for the first time. However, if the `WM_CREATE` message
-             * is used here instead, then this line of code can be removed.
-             */
+            // NOTE(jaege): The above line of code is needed when using
+            // `WM_NCCREATE` message to get the pointer to the concrete class
+            // object for the first time. However, if the `WM_CREATE` message
+            // is used here instead, then this line of code can be removed.
         }
         else
         {
