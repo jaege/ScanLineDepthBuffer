@@ -30,12 +30,6 @@ void OffscreenBuffer::Resize(INT32 width, INT32 height)
         DebugPrint(L"[WRN] VirtualAlloc Failed.");
         std::abort();
     }
-
-    if (m_memory)
-    {
-        // TODO(jaege): clear memory
-        //DebugDarwRandomPicture();
-    }
 }
 
 void OffscreenBuffer::SetPixel(INT32 x, INT32 y, const Color &color)

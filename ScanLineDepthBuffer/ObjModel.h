@@ -20,13 +20,6 @@ using PositionF = Triple<double>;
 using PositionI = Triple<INT32>;
 using VectorF = Triple<double>;
 
-//struct PositionIIF
-//{
-//    int x;
-//    int y;
-//    double z;
-//};
-
 class ObjModel
 {
 public:
@@ -51,7 +44,6 @@ private:
     std::vector<PositionF> m_vertexNormals;
 
     std::vector<PositionF> m_scaledVertices;
-    //std::vector<double> m_scaledDepth;  // normalize z coordinate, range [0, 1]
 
     double m_scale = 1.0;  // Model scale factor
 
@@ -116,14 +108,6 @@ private:
 
     std::vector<std::vector<EdgeNode>> m_edges;
 
-    //struct ActivePlaneNode
-    //{
-    //    Plane<> plane;
-    //    UINT32 id;
-    //    UINT32 diffy;
-    //    Color color;
-    //};
-
     struct ActiveEdgePairNode
     {
         struct Edge
@@ -138,10 +122,9 @@ private:
         UINT32 planeId;
     };
 
-    // Light direction vector
-    VectorF m_light{1, 1, 1};
+    VectorF m_light{1, 1, 1};  // Light direction vector
 
-    Color planeColor = WHITE;
+    Color m_planeColor = WHITE;
 
     // Initialize plane tables and edge tables.
     void InitTables();
