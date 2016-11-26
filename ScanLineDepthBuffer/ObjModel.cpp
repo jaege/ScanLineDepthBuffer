@@ -37,7 +37,7 @@ void ObjModel::LoadFromObjFile(const std::wstring & filePath)
 
     PositionF pos{ };
     m_vertices.push_back(pos);
-    m_vertexNormals.push_back(pos);
+    //m_vertexNormals.push_back(pos);
 
     while (std::getline(fileStream, line))
     {
@@ -62,10 +62,13 @@ void ObjModel::LoadFromObjFile(const std::wstring & filePath)
                 if (m_box.zmax < pos.z) m_box.zmax = pos.z;
                 m_vertices.push_back(pos);
                 break;
-            case 'n':
-                // vn i j k
-                m_vertexNormals.push_back(pos);
-                break;
+
+            //case 'n':
+            //    // vn i j k
+            //    // vn is ignored.
+            //    m_vertexNormals.push_back(pos);
+            //    break;
+
             default:
                 // vp and vt are ignored.
                 break;
@@ -75,6 +78,7 @@ void ObjModel::LoadFromObjFile(const std::wstring & filePath)
         case 'f':
             // f  v1/vt1/vn1   v2/vt2/vn2   v3/vt3/vn3 ...
             // Negative indices are not supported.
+            // vt and vn are optional.
             // Index 0 means not present in file.
             {
                 std::vector<FaceNode> face;
@@ -106,20 +110,16 @@ void ObjModel::LoadFromObjFile(const std::wstring & filePath)
             }
             break;
             
-        case 'g':
-            // Ignored.
-
-            // All grouping statements are state-setting.  This means that once
-            // a group statement is set, it alpplies to all elements that follow
-            // until the next group statement.
-
-            break;
-
         default:
             // Ignore other cases.
             break;
         }
     }
+}
+
+void ObjModel::SetModelScale(const OffscreenBuffer &buffer, double scaleFactor)
+{
+    SetModelScale(buffer.GetWidth(), buffer.GetHeight(), scaleFactor);
 }
 
 void ObjModel::SetModelScale(LONG width, LONG height, double scaleFactor)
@@ -184,9 +184,9 @@ void ObjModel::SetModelScale(LONG width, LONG height, double scaleFactor)
     for (auto &v : m_vertices)
     {
         double xnew = (v.x - (m_box.xmin + m_box.xmax) / 2) *
-                                 m_scale + 1.0 * width / 2;
+            m_scale + 1.0 * width / 2;
         double ynew = ((m_box.ymin + m_box.ymax) / 2 - v.y) *
-                                 m_scale + 1.0 * height / 2;
+            m_scale + 1.0 * height / 2;
         double znew = (m_box.zmax - v.z) * m_scale;
         m_scaledVertices.push_back({xnew, ynew, znew});
     }
@@ -305,7 +305,7 @@ void ObjModel::SetBuffer(OffscreenBuffer &buffer)
     std::vector<ActiveEdgePairNode> activeEdgePairs;
     INT32 height = buffer.GetHeight();
     INT32 width = buffer.GetWidth();
-    Color background = BLACK;
+    Color background{30, 30, 30};
     for (INT32 y = 0; y < height; ++y)
     {
         std::vector<Color> frameBuffer(width, background);
@@ -339,7 +339,8 @@ void ObjModel::SetBuffer(OffscreenBuffer &buffer)
                         continue;
                     }
 
-                    // TODO(jaege): handle the concave polygon case.
+                    // TODO(jaege): handle the concave polygon case, which
+                    //              means edges.size()=2n (n>1).
                     Double lhs(edges[0].xtop), rhs(edges[1].xtop);
                     if (edges[0].xtop > edges[1].xtop ||
                         lhs.AlmostEquals(rhs) && edges[0].dx > edges[1].dx)
@@ -514,6 +515,8 @@ void ObjModel::SetBuffer(OffscreenBuffer &buffer)
     // For debug purpose, draw all vertices.
     //for (const auto & v : m_scaledVertices)
     //    buffer.SetPixel(Pixelate(v.x), Pixelate(v.y), GREEN);
+    // For debug purpose, draw bounding rectangle.
+    buffer.DebugDrawBoundingRect(m_boundingRect, Color::BLUE);
 }
 
 INT32 ObjModel::Pixelate(double pos)

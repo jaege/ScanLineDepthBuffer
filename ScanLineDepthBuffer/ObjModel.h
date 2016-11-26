@@ -25,12 +25,7 @@ class ObjModel
 public:
     void LoadFromObjFile(const std::wstring &filePath);
 
-    RECT GetBoundingRect() const { return m_boundingRect; }
-
-    // width: screen window width in pixel
-    // height: screen window height in pixel
-    // scaleFactor: object scale factor on x and y axes
-    void SetModelScale(LONG width, LONG height, double scaleFactor = 1.0);
+    void SetModelScale(const OffscreenBuffer &buffer, double scaleFactor = 1.0);
 
     void SetBuffer(OffscreenBuffer &buffer);
 
@@ -38,14 +33,19 @@ private:
     std::wstring m_filePath;
 
     // right-hand coordinate system, sequentially numbered, starting with 1
-    // This numbering sequence continues even when vertex data is separated by
+    // This number sequence continues even when vertex data is separated by
     // other data.
     std::vector<PositionF> m_vertices;  // geometric vertices
-    std::vector<PositionF> m_vertexNormals;
+    //std::vector<PositionF> m_vertexNormals;
 
     std::vector<PositionF> m_scaledVertices;
 
     double m_scale = 1.0;  // Model scale factor
+
+    // width: buffer width in pixel
+    // height: buffer height in pixel
+    // scaleFactor: object scale factor on x and y axes
+    void SetModelScale(LONG width, LONG height, double scaleFactor);
 
     INT32 Pixelate(double pos);
 
@@ -122,9 +122,9 @@ private:
         UINT32 planeId;
     };
 
-    VectorF m_light{1, 1, 1};  // Light direction vector
+    VectorF m_light{1.0, 1.5, 1.0};  // Light direction vector
 
-    Color m_planeColor = WHITE;
+    Color m_planeColor = Color::WHITE;
 
     // Initialize plane tables and edge tables.
     void InitTables();
