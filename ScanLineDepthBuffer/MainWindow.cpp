@@ -50,7 +50,8 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
             LONG height = rc.bottom - rc.top;
 
             m_buffer.Resize(width, height);
-            m_objModel.SetModelScale(m_buffer, 0.95);
+            double scaleFactor = 0.95;
+            m_objModel.SetModelScale(m_buffer, scaleFactor);
             //m_buffer.DebugDarwRandomPicture();
             m_objModel.SetBuffer(m_buffer);
         }

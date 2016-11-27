@@ -40,8 +40,6 @@ private:
 
     std::vector<PositionF> m_scaledVertices;
 
-    double m_scale = 1.0;  // Model scale factor
-
     // width: buffer width in pixel
     // height: buffer height in pixel
     // scaleFactor: object scale factor on x and y axes

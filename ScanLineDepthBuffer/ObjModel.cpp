@@ -115,6 +115,9 @@ void ObjModel::LoadFromObjFile(const std::wstring & filePath)
             break;
         }
     }
+
+    DebugPrint(L"[INF] Model has %d vertices, %d faces.",
+               m_vertices.size() - 1, m_faces.size());
 }
 
 void ObjModel::SetModelScale(const OffscreenBuffer &buffer, double scaleFactor)
@@ -168,26 +171,26 @@ void ObjModel::SetModelScale(LONG width, LONG height, double scaleFactor)
     double yScale = 1.0 * height / (m_box.ymax - m_box.ymin);
 
     // Ensure that the whole object can be seen in screen when scaleFactor <= 1.
-    m_scale = min(xScale, yScale) * scaleFactor;
+    double scale = min(xScale, yScale) * scaleFactor;
 
     // Round to the nearest integer.
     m_boundingRect.left = Pixelate((m_box.xmin -
-        (m_box.xmin + m_box.xmax) / 2) * m_scale + 1.0 * width / 2);  // xmin'
+        (m_box.xmin + m_box.xmax) / 2) * scale + 1.0 * width / 2);  // xmin'
     m_boundingRect.right = Pixelate((m_box.xmax -
-        (m_box.xmin + m_box.xmax) / 2) * m_scale + 1.0 * width / 2);  // xmax'
+        (m_box.xmin + m_box.xmax) / 2) * scale + 1.0 * width / 2);  // xmax'
     m_boundingRect.top = Pixelate(((m_box.ymin + m_box.ymax) / 2 -
-        m_box.ymax) * m_scale + 1.0 * height / 2);  // ymin'
+        m_box.ymax) * scale + 1.0 * height / 2);  // ymin'
     m_boundingRect.bottom = Pixelate(((m_box.ymin + m_box.ymax) / 2 -
-        m_box.ymin) * m_scale + 1.0 * height / 2);  // ymax'
+        m_box.ymin) * scale + 1.0 * height / 2);  // ymax'
 
     m_scaledVertices.clear();
     for (auto &v : m_vertices)
     {
         double xnew = (v.x - (m_box.xmin + m_box.xmax) / 2) *
-            m_scale + 1.0 * width / 2;
+            scale + 1.0 * width / 2;
         double ynew = ((m_box.ymin + m_box.ymax) / 2 - v.y) *
-            m_scale + 1.0 * height / 2;
-        double znew = (m_box.zmax - v.z) * m_scale;
+            scale + 1.0 * height / 2;
+        double znew = (m_box.zmax - v.z) * scale;
         m_scaledVertices.push_back({xnew, ynew, znew});
     }
 }
@@ -306,7 +309,8 @@ void ObjModel::SetBuffer(OffscreenBuffer &buffer)
     INT32 height = buffer.GetHeight();
     INT32 width = buffer.GetWidth();
     Color background{30, 30, 30};
-    for (INT32 y = 0; y < height; ++y)
+    INT32 ybegin = m_boundingRect.top < 0 ? m_boundingRect.top : 0;
+    for (INT32 y = ybegin; y < height; ++y)
     {
         std::vector<Color> frameBuffer(width, background);
         std::vector<double> depthBuffer(width, DBL_MAX);
@@ -314,55 +318,51 @@ void ObjModel::SetBuffer(OffscreenBuffer &buffer)
         if (y >= m_boundingRect.top && y <= m_boundingRect.bottom)
         {
             // Add planes from m_planes to activePlanes.
-            if (m_planes[y - m_boundingRect.top].size() > 0)
+            for (const auto &pl : m_planes[y - m_boundingRect.top])
             {
-                for (const auto &pl : m_planes[y - m_boundingRect.top])
+                activePlanes.push_back(pl);
+
+                // Add edge pair of newly added plane to activeEdgePairs.
+                std::vector<EdgeNode> edges;
+                for (const auto &edge : m_edges[y - m_boundingRect.top])
                 {
-                    activePlanes.push_back(pl);
-
-                    // Add edge pair of newly added plane to activeEdgePairs.
-                    std::vector<EdgeNode> edges;
-                    for (const auto &edge : m_edges[y - m_boundingRect.top])
-                    {
-                        if (edge.planeId == pl.id)
-                            edges.push_back(edge);
-                    }
-                    // There should be even number of edges.
-                    assert(edges.size() % 2 == 0);
-
-                    if (edges.size() == 0)
-                    {
-                        // BUG(jaege): teapot_wt.obj desk.obj flowers.obj bunny.obj etc.
-                        //      vector edges.size() is 0, index out of range. Find out why.
-                        DebugPrint(L"[ERR] Can't find edge pair of plane "
-                                   "#%d at y=%d.", pl.id, y);
-                        continue;
-                    }
-
-                    // TODO(jaege): handle the concave polygon case, which
-                    //              means edges.size()=2n (n>1).
-                    Double lhs(edges[0].xtop), rhs(edges[1].xtop);
-                    if (edges[0].xtop > edges[1].xtop ||
-                        lhs.AlmostEquals(rhs) && edges[0].dx > edges[1].dx)
-                        std::swap(edges[0], edges[1]);
-
-                    ActiveEdgePairNode epn;
-                    epn.l.x = edges[0].xtop;
-                    epn.l.dx = edges[0].dx;
-                    epn.l.diffy = edges[0].diffy;
-                    epn.r.x = edges[1].xtop;
-                    epn.r.dx = edges[1].dx;
-                    epn.r.diffy = edges[1].diffy;
-                    // NOTE(jaege): zl may lose some precision since y is rounded.
-                    // TODO(jaege): Test if this is ok.
-                    epn.zl = -(pl.plane.a * edges[0].xtop + pl.plane.b * y +
-                               pl.plane.d) / pl.plane.c;
-                    epn.dzx = -pl.plane.a / pl.plane.c;
-                    epn.dzy = -pl.plane.b / pl.plane.c;
-                    epn.planeId = pl.id;
-
-                    activeEdgePairs.push_back(epn);
+                    if (edge.planeId == pl.id) { edges.push_back(edge); }
                 }
+                // There should be even number of edges.
+                assert(edges.size() % 2 == 0);
+                // TODO(jaege): handle the concave polygon case, which
+                //              means edges.size()=2n (n>1).
+
+                if (edges.size() == 0)
+                {
+                    // BUG(jaege): teapot_wt.obj desk.obj flowers.obj bunny.obj etc.
+                    //      vector edges.size() is 0, find out why.
+                    DebugPrint(L"[ERR] Can't find edge pair of plane "
+                               "#%d at y=%d.", pl.id, y);
+                    continue;
+                }
+
+                Double lhs(edges[0].xtop), rhs(edges[1].xtop);
+                if (edges[0].xtop > edges[1].xtop ||
+                    lhs.AlmostEquals(rhs) && edges[0].dx > edges[1].dx)
+                    std::swap(edges[0], edges[1]);
+
+                ActiveEdgePairNode epn;
+                epn.l.x = edges[0].xtop;
+                epn.l.dx = edges[0].dx;
+                epn.l.diffy = edges[0].diffy;
+                epn.r.x = edges[1].xtop;
+                epn.r.dx = edges[1].dx;
+                epn.r.diffy = edges[1].diffy;
+                // NOTE(jaege): zl may lose some precision since y is rounded.
+                // TODO(jaege): Test if this is ok.
+                epn.zl = -(pl.plane.a * edges[0].xtop + pl.plane.b * y +
+                           pl.plane.d) / pl.plane.c;
+                epn.dzx = -pl.plane.a / pl.plane.c;
+                epn.dzy = -pl.plane.b / pl.plane.c;
+                epn.planeId = pl.id;
+
+                activeEdgePairs.push_back(epn);
             }
 
             for (auto epn = activeEdgePairs.begin(); epn != activeEdgePairs.end(); )
@@ -377,18 +377,23 @@ void ObjModel::SetBuffer(OffscreenBuffer &buffer)
                     // Ignore part of lines that go out of screen border.
                     if (x >= width)
                     {
+                        DebugPrint(L"[WRN] edge of plane #%d at y=%d, x=%d "
+                                   "posistion out of right boundary",
+                                   epn->planeId, y, x);
+                        // No need to update depth any more, since we are done
+                        // with this scan line.
                         break;
                     }
-                    if (x < 0)
+                    else if (x < 0)
                     {
                         // BUG(jaege): flowers.obj
                         //     vector depthBuffer[] index out of upper range,
                         //     negative x. Find out why.
-                        DebugPrint(L"[ERR] edge of plane #%d at y=%d, x=%d "
+                        DebugPrint(L"[WRN] edge of plane #%d at y=%d, x=%d "
                                    "posistion out of left boundary",
                                    epn->planeId, y, x);
                     }
-                    if (x >= 0 && z < depthBuffer[x])
+                    else if (z < depthBuffer[x])
                     {
                         // Update depthBuffer and frameBuffer.
                         depthBuffer[x] = z;
@@ -410,7 +415,6 @@ void ObjModel::SetBuffer(OffscreenBuffer &buffer)
                                        epn->planeId, x, y);
                         }
                     }
-
                     z += epn->dzx;
                 }
                 // Update activeEdgePairs.
@@ -499,17 +503,11 @@ void ObjModel::SetBuffer(OffscreenBuffer &buffer)
             // Update activePlanes.
             for (auto it = activePlanes.begin(); it != activePlanes.end(); )
             {
-                if (--it->diffy == 0)
-                {
-                    it = activePlanes.erase(it);
-                }
-                else
-                {
-                    ++it;
-                }
+                if (--it->diffy == 0) { it = activePlanes.erase(it); }
+                else { ++it; }
             }
         }
-        buffer.SetRow(y, frameBuffer);
+        if (y >= 0) { buffer.SetRow(y, frameBuffer); }
     }
 
     // For debug purpose, draw all vertices.
