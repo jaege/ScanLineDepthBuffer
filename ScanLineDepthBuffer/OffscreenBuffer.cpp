@@ -57,6 +57,7 @@ void OffscreenBuffer::OnPaint(HDC hdc, LONG width, LONG height)
 
 void OffscreenBuffer::DebugDrawBoundingRect(RECT rect, const Color &color)
 {
+#ifndef NDEBUG
     // Ignore rectangle that out of screen.
     if (rect.left >= 0 && rect.left < m_width)
         for (INT32 y = rect.top; y < rect.bottom; ++y)
@@ -74,6 +75,7 @@ void OffscreenBuffer::DebugDrawBoundingRect(RECT rect, const Color &color)
         for (INT32 x = rect.left; x < rect.right; ++x)
             if (x >= 0 && x < m_width)
                 SetPixel(x, rect.bottom, color);
+#endif
 }
 
 void OffscreenBuffer::DebugDarwRandomPicture()

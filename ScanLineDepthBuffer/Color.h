@@ -15,10 +15,9 @@ struct Color
 
     static Color RandomColor();
 
+    static const Color RED;
+    static const Color GREEN;
+    static const Color BLUE;
+    static const Color BLACK;
+    static const Color WHITE;
 };
-
-const Color RED{255, 0, 0};
-const Color GREEN{0, 255, 0};
-const Color BLUE{0, 0, 255};
-const Color BLACK{0, 0, 0};
-const Color WHITE{255, 255, 255};

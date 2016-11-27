@@ -16,6 +16,26 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
     //    // Else: User canceled. Do nothing.
     //    return 0;
 
+    case WM_LBUTTONDOWN:
+        DebugPrint(L"WM_LBUTTONDOWN");
+        // Rotate object about y axis.
+
+        return DefWindowProc(m_hwnd, uMsg, wParam, lParam);
+
+    case WM_LBUTTONUP:
+        DebugPrint(L"WM_LBUTTONUP");
+        return DefWindowProc(m_hwnd, uMsg, wParam, lParam);
+
+    case WM_RBUTTONDOWN:
+        DebugPrint(L"WM_RBUTTONDOWN");
+        // Rotate object about x axis.
+
+        return DefWindowProc(m_hwnd, uMsg, wParam, lParam);
+
+    case WM_RBUTTONUP:
+        DebugPrint(L"WM_RBUTTONUP");
+        return DefWindowProc(m_hwnd, uMsg, wParam, lParam);
+
     case WM_DESTROY:
         DebugPrint(L"WM_DESTROY");
         PostQuitMessage(0);
@@ -30,10 +50,10 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
             LONG height = rc.bottom - rc.top;
 
             m_buffer.Resize(width, height);
-            m_objModel.SetModelScale(width, height, 0.95);
+            double scaleFactor = 0.95;
+            m_objModel.SetModelScale(m_buffer, scaleFactor);
             //m_buffer.DebugDarwRandomPicture();
             m_objModel.SetBuffer(m_buffer);
-            m_buffer.DebugDrawBoundingRect(m_objModel.GetBoundingRect(), BLUE);
         }
         return 0;
 
@@ -92,7 +112,6 @@ void MainWindow::OpenObjFile()
                     if (SUCCEEDED(hr))
                     {
                         DebugPrint(L"[INF] Open obj file: %s", pszFilePath);
-                        // TODO(jaege): Load file to m_objModel.
 
                         m_objModel.LoadFromObjFile(pszFilePath);
 

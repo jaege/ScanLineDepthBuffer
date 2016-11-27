@@ -1,5 +1,11 @@
 ﻿#pragma once
 
+#ifdef NDEBUG
+
+#define DebugPrint(format, ...) ((void)0)
+
+#else
+
 int DebugPrintVFA(const char *format, va_list argList);
 
 int DebugPrintVFW(const wchar_t *format, va_list argList);
@@ -37,3 +43,5 @@ int DebugPrintFW(const wchar_t *format, ...);
 //#define DebugPrint(format, ...) DebugPrintFA(__FILE__ ":" \
 //    STRINGIZE(__LINE__) " " format "\n", __VA_ARGS__)
 //#endif // !UNICODE
+
+#endif // !NDEBUG

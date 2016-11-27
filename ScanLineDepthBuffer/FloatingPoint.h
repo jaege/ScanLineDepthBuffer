@@ -54,11 +54,11 @@ class TypeWithSize<8> {
 };
 
 // Integer types of known sizes.
-typedef TypeWithSize<4>::Int Int32;
-typedef TypeWithSize<4>::UInt UInt32;
-typedef TypeWithSize<8>::Int Int64;
-typedef TypeWithSize<8>::UInt UInt64;
-typedef TypeWithSize<8>::Int TimeInMillis;  // Represents time in milliseconds.
+//typedef TypeWithSize<4>::Int Int32;
+//typedef TypeWithSize<4>::UInt UInt32;
+//typedef TypeWithSize<8>::Int Int64;
+//typedef TypeWithSize<8>::UInt UInt64;
+//typedef TypeWithSize<8>::Int TimeInMillis;  // Represents time in milliseconds.
 
 // Excerpt from https://github.com/google/googletest/blob/master/googletest/include/gtest/internal/gtest-internal.h#L232
 
