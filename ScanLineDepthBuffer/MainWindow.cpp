@@ -6,6 +6,7 @@
 
 LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+    static double scaleFactor = 0.95;
     switch (uMsg)
     {
     //case WM_CLOSE:
@@ -15,6 +16,34 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
     //    }
     //    // Else: User canceled. Do nothing.
     //    return 0;
+
+    case WM_CHAR:
+        {
+            wchar_t ch = static_cast<wchar_t>(wParam);
+            DebugPrint(L"WM_CHAR: %c", ch);
+            switch (ch)
+            {
+            case L'z':
+            case L'Z':
+                {
+                    if (scaleFactor < 100) { scaleFactor += 0.05; }
+                    m_objModel.SetModelScale(m_buffer, scaleFactor);
+                    m_objModel.SetBuffer(m_buffer);
+                    InvalidateRect(m_hwnd, NULL, FALSE);
+                }
+                break;
+            case L'c':
+            case L'C':
+                {
+                    if (scaleFactor > 0.05) { scaleFactor -= 0.05; }
+                    m_objModel.SetModelScale(m_buffer, scaleFactor);
+                    m_objModel.SetBuffer(m_buffer);
+                    InvalidateRect(m_hwnd, NULL, FALSE);
+                }
+                break;
+            }
+        }
+        return DefWindowProc(m_hwnd, uMsg, wParam, lParam);
 
     case WM_LBUTTONDOWN:
         DebugPrint(L"WM_LBUTTONDOWN");
@@ -50,9 +79,9 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
             LONG height = rc.bottom - rc.top;
 
             m_buffer.Resize(width, height);
-            double scaleFactor = 0.95;
-            m_objModel.SetModelScale(m_buffer, scaleFactor);
             //m_buffer.DebugDarwRandomPicture();
+
+            m_objModel.SetModelScale(m_buffer, scaleFactor);
             m_objModel.SetBuffer(m_buffer);
         }
         return 0;

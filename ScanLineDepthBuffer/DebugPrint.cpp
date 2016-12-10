@@ -8,22 +8,22 @@
 #include <Windows.h>
 #include "DebugPrint.h"
 
+#define MAX_ERROR_MESSAGE_LENGTH 1024
+
 int DebugPrintVFA(const char *format, va_list argList)
 {
-    const UINT32 MAX_CHARS = 1024;
-    static char s_buffer[MAX_CHARS];
+    static char s_buffer[MAX_ERROR_MESSAGE_LENGTH];
 
-    int ret = vsnprintf(s_buffer, MAX_CHARS, format, argList);
+    int ret = vsnprintf(s_buffer, MAX_ERROR_MESSAGE_LENGTH, format, argList);
     OutputDebugStringA(s_buffer);
     return ret;
 }
 
 int DebugPrintVFW(const wchar_t *format, va_list argList)
 {
-    const UINT32 MAX_CHARS = 1024;
-    static wchar_t s_buffer[MAX_CHARS];
+    static wchar_t s_buffer[MAX_ERROR_MESSAGE_LENGTH];
 
-    int ret = vswprintf(s_buffer, MAX_CHARS, format, argList);
+    int ret = vswprintf(s_buffer, MAX_ERROR_MESSAGE_LENGTH, format, argList);
     OutputDebugStringW(s_buffer);
     return ret;
 }
