@@ -11,6 +11,8 @@
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
                     PWSTR pCmdLine, int nCmdShow)
 {
+    // Compile under Release mode with /O2 for better real-time performance.
+
     MainWindow win;
 
     if (!win.Create(L"扫描线 Z-Buffer 算法演示", WS_OVERLAPPEDWINDOW))

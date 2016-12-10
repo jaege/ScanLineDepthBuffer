@@ -32,7 +32,7 @@ public:
 private:
     std::wstring m_filePath;
 
-    // right-hand coordinate system, sequentially numbered, starting with 1
+    // Right-hand coordinate system, sequentially numbered, index start from 1.
     // This number sequence continues even when vertex data is separated by
     // other data.
     std::vector<PositionF> m_vertices;  // geometric vertices
@@ -44,8 +44,6 @@ private:
     // height: buffer height in pixel
     // scaleFactor: object scale factor on x and y axes
     void SetModelScale(LONG width, LONG height, double scaleFactor);
-
-    static INT32 Pixelate(double pos);
 
     struct FaceNode
     {

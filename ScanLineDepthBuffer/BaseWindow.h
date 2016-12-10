@@ -20,9 +20,9 @@ public:
 
             pThis->m_hwnd = hwnd;
             // NOTE(jaege): The above line of code is needed when using
-            // `WM_NCCREATE` message to get the pointer to the concrete class
-            // object for the first time. However, if the `WM_CREATE` message
-            // is used here instead, then this line of code can be removed.
+            //     `WM_NCCREATE` message to get the pointer to the concrete
+            //     class object for the first time. However, if the `WM_CREATE`
+            //     message is used here instead, then this line can be removed.
         }
         else
         {
@@ -46,7 +46,7 @@ public:
         wc.lpfnWndProc = DERIVED_TYPE::WindowProc;
         wc.hInstance = GetModuleHandle(NULL);
         wc.lpszClassName = ClassName();
-        // NOTE(jaege): Force redraw whole window when any change happens.
+        // Force redraw whole window when any change happens.
         wc.style = CS_HREDRAW | CS_VREDRAW;
 
         RegisterClass(&wc);
