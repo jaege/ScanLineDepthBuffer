@@ -250,5 +250,5 @@ inline double FloatingPoint<double>::Max() { return DBL_MAX; }
 
 // Typedefs the instances of the FloatingPoint template class that we
 // care to use.
-typedef FloatingPoint<float> Float;
-typedef FloatingPoint<double> Double;
+//typedef FloatingPoint<float> Float;
+//typedef FloatingPoint<double> Double;

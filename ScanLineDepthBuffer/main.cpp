@@ -2,8 +2,6 @@
 #define UNICODE
 #endif
 
-#define ASSERTION_ENABLED
-
 #include <Windows.h>
 #include "DebugPrint.h"
 #include "MainWindow.h"

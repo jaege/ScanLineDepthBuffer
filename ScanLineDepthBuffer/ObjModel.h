@@ -1,9 +1,9 @@
 ﻿#pragma once
 
-#include <cfloat>  // DBL_MIN DBL_MAX
 #include <string>
 #include <vector>
 #include <Windows.h>
+#include "Types.h"
 #include "Color.h"
 #include "OffscreenBuffer.h"
 
@@ -16,16 +16,16 @@ struct Triple
     T z;
 };
 
-using PositionF = Triple<double>;
+using PositionR = Triple<REAL>;
 using PositionI = Triple<INT32>;
-using VectorF = Triple<double>;
+using VectorR = Triple<REAL>;
 
 class ObjModel
 {
 public:
     void LoadFromObjFile(const std::wstring &filePath);
 
-    void SetModelScale(const OffscreenBuffer &buffer, double scaleFactor = 1.0);
+    void SetModelScale(const OffscreenBuffer &buffer, REAL scaleFactor = 1.0f);
 
     void SetBuffer(OffscreenBuffer &buffer);
 
@@ -35,15 +35,15 @@ private:
     // Right-hand coordinate system, sequentially numbered, index start from 1.
     // This number sequence continues even when vertex data is separated by
     // other data.
-    std::vector<PositionF> m_vertices;  // geometric vertices
-    //std::vector<PositionF> m_vertexNormals;
+    std::vector<PositionR> m_vertices;  // geometric vertices
+    //std::vector<PositionR> m_vertexNormals;
 
-    std::vector<PositionF> m_scaledVertices;
+    std::vector<PositionR> m_scaledVertices;
 
     // width: buffer width in pixel
     // height: buffer height in pixel
     // scaleFactor: object scale factor on x and y axes
-    void SetModelScale(LONG width, LONG height, double scaleFactor);
+    void SetModelScale(INT32 width, INT32 height, REAL scaleFactor);
 
     struct FaceNode
     {
@@ -56,23 +56,23 @@ private:
 
     struct BoundingBox
     {
-        double xmin;
-        double xmax;
-        double ymin;
-        double ymax;
-        double zmin;
-        double zmax;
+        REAL xmin;
+        REAL xmax;
+        REAL ymin;
+        REAL ymax;
+        REAL zmin;
+        REAL zmax;
 
-        BoundingBox() : xmin(DBL_MAX), xmax(DBL_MIN),
-                        ymin(DBL_MAX), ymax(DBL_MIN),
-                        zmin(DBL_MAX), zmax(DBL_MIN)
+        BoundingBox() : xmin(REAL_MAX), xmax(REAL_MIN),
+                        ymin(REAL_MAX), ymax(REAL_MIN),
+                        zmin(REAL_MAX), zmax(REAL_MIN)
         { }
     };
 
     BoundingBox m_box;
     RECT m_boundingRect{ };
 
-    template <typename T = double>
+    template <typename T = REAL>
     struct Plane
     {
         T a;
@@ -86,7 +86,7 @@ private:
 
     struct PlaneNode
     {
-        Plane<> plane;
+        Plane<REAL> plane;
         UINT32 id;
         UINT32 diffy;
         Color color;
@@ -96,8 +96,8 @@ private:
 
     struct EdgeNode
     {
-        double xtop;
-        double dx;
+        REAL xtop;
+        REAL dx;
         UINT32 diffy;
         UINT32 planeId;
     };
@@ -108,17 +108,17 @@ private:
     {
         struct Edge
         {
-            double x;
-            double dx;
+            REAL x;
+            REAL dx;
             UINT32 diffy;
         } l, r;
-        double zl;
-        double dzx;
-        double dzy;
+        REAL zl;
+        REAL dzx;
+        REAL dzy;
         UINT32 planeId;
     };
 
-    VectorF m_light{1.0, 1.5, 1.0};  // Light direction vector
+    VectorR m_light{1.0f, 1.5f, 1.0f};  // Light direction vector
 
     Color m_planeColor = Color::WHITE;
 

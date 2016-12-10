@@ -119,6 +119,7 @@
     <ClInclude Include="MainWindow.h" />
     <ClInclude Include="ObjModel.h" />
     <ClInclude Include="OffscreenBuffer.h" />
+    <ClInclude Include="Types.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Color.cpp" />

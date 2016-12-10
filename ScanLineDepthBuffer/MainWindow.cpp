@@ -6,7 +6,8 @@
 
 LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    static double scaleFactor = 0.95;
+    static REAL scaleFactor = 0.95f;
+    const REAL scaleFactorStep = 0.05f;
     switch (uMsg)
     {
     //case WM_CLOSE:
@@ -26,7 +27,7 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
             case L'z':
             case L'Z':
                 {
-                    if (scaleFactor < 100) { scaleFactor += 0.05; }
+                    if (scaleFactor < 50.0f) { scaleFactor += scaleFactorStep; }
                     m_objModel.SetModelScale(m_buffer, scaleFactor);
                     m_objModel.SetBuffer(m_buffer);
                     InvalidateRect(m_hwnd, NULL, FALSE);
@@ -35,7 +36,7 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
             case L'c':
             case L'C':
                 {
-                    if (scaleFactor > 0.05) { scaleFactor -= 0.05; }
+                    if (scaleFactor > 0.05f) { scaleFactor -= scaleFactorStep; }
                     m_objModel.SetModelScale(m_buffer, scaleFactor);
                     m_objModel.SetBuffer(m_buffer);
                     InvalidateRect(m_hwnd, NULL, FALSE);
@@ -75,8 +76,8 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
             DebugPrint(L"WM_SIZE");
             RECT rc;
             GetClientRect(m_hwnd, &rc);
-            LONG width = rc.right - rc.left;
-            LONG height = rc.bottom - rc.top;
+            INT32 width = rc.right - rc.left;
+            INT32 height = rc.bottom - rc.top;
 
             m_buffer.Resize(width, height);
             //m_buffer.DebugDarwRandomPicture();
@@ -94,8 +95,8 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
             RECT rc;
             GetClientRect(m_hwnd, &rc);
-            LONG width = rc.right - rc.left;
-            LONG height = rc.bottom - rc.top;
+            INT32 width = rc.right - rc.left;
+            INT32 height = rc.bottom - rc.top;
 
             m_buffer.OnPaint(hdc, width, height);
 

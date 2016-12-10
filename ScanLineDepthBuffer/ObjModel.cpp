@@ -5,6 +5,7 @@
 #include <cmath>  // std::lround() std::sqrt()
 #include <utility>  // std::swap()
 #include <Windows.h>
+#include "Types.h"
 #include "FloatingPoint.h"
 #include "ObjModel.h"
 #include "DebugPrint.h"
@@ -35,7 +36,7 @@ void ObjModel::LoadFromObjFile(const std::wstring & filePath)
 
     std::string line;
 
-    PositionF pos{ };
+    PositionR pos{ };
     m_vertices.push_back(pos);
     //m_vertexNormals.push_back(pos);
 
@@ -120,12 +121,12 @@ void ObjModel::LoadFromObjFile(const std::wstring & filePath)
                m_vertices.size() - 1, m_faces.size());
 }
 
-void ObjModel::SetModelScale(const OffscreenBuffer &buffer, double scaleFactor)
+void ObjModel::SetModelScale(const OffscreenBuffer &buffer, REAL scaleFactor)
 {
     SetModelScale(buffer.GetWidth(), buffer.GetHeight(), scaleFactor);
 }
 
-void ObjModel::SetModelScale(LONG width, LONG height, double scaleFactor)
+void ObjModel::SetModelScale(INT32 width, INT32 height, REAL scaleFactor)
 {
     // Transform object from object coordinate to screen coordinate, and move
     // it to the center of the screen space.
@@ -167,32 +168,34 @@ void ObjModel::SetModelScale(LONG width, LONG height, double scaleFactor)
     //       y' v
 
     assert(scaleFactor > 0);
-    double xScale = 1.0 * width / (m_box.xmax - m_box.xmin);
-    double yScale = 1.0 * height / (m_box.ymax - m_box.ymin);
+    REAL xScale = static_cast<REAL>(width) / (m_box.xmax - m_box.xmin);
+    REAL yScale = static_cast<REAL>(height) / (m_box.ymax - m_box.ymin);
 
     // Ensure that the whole object can be seen in screen when scaleFactor <= 1.
-    double scale = min(xScale, yScale) * scaleFactor;
+    REAL scale = min(xScale, yScale) * scaleFactor;
 
     // Round inside the rectangle.
     m_boundingRect.left = static_cast<int>(std::ceil((m_box.xmin -
-        (m_box.xmin + m_box.xmax) / 2) * scale + 1.0 * width / 2));  // xmin'
+        (m_box.xmin + m_box.xmax) / 2) * scale +
+        static_cast<REAL>(width) / 2));  // xmin'
     m_boundingRect.right = static_cast<int>(std::floor((m_box.xmax -
-        (m_box.xmin + m_box.xmax) / 2) * scale + 1.0 * width / 2));  // xmax'
+        (m_box.xmin + m_box.xmax) / 2) * scale +
+        static_cast<REAL>(width) / 2));  // xmax'
     m_boundingRect.top = static_cast<int>(
         std::ceil(((m_box.ymin + m_box.ymax) / 2 -
-        m_box.ymax) * scale + 1.0 * height / 2));  // ymin'
+        m_box.ymax) * scale + static_cast<REAL>(height) / 2));  // ymin'
     m_boundingRect.bottom = static_cast<int>(
         std::floor(((m_box.ymin + m_box.ymax) / 2 -
-        m_box.ymin) * scale + 1.0 * height / 2));  // ymax'
+        m_box.ymin) * scale + static_cast<REAL>(height) / 2));  // ymax'
 
     m_scaledVertices.clear();
     for (auto &v : m_vertices)
     {
-        double xnew = (v.x - (m_box.xmin + m_box.xmax) / 2) *
-            scale + 1.0 * width / 2;
-        double ynew = ((m_box.ymin + m_box.ymax) / 2 - v.y) *
-            scale + 1.0 * height / 2;
-        double znew = (m_box.zmax - v.z) * scale;
+        REAL xnew = (v.x - (m_box.xmin + m_box.xmax) / 2) *
+            scale + static_cast<REAL>(width) / 2;
+        REAL ynew = ((m_box.ymin + m_box.ymax) / 2 - v.y) *
+            scale + static_cast<REAL>(height) / 2;
+        REAL znew = (m_box.zmax - v.z) * scale;
         m_scaledVertices.push_back({xnew, ynew, znew});
     }
 }
@@ -221,8 +224,8 @@ void ObjModel::InitTables()
     m_edges.clear();
     m_edges.resize(m_boundingRect.bottom - m_boundingRect.top + 1);
 
-    double lightN = 1.0 / std::sqrt(m_light.x * m_light.x + m_light.y *
-                                    m_light.y + m_light.z * m_light.z);
+    REAL lightN = static_cast<REAL>(1) / std::sqrt(
+        m_light.x * m_light.x + m_light.y * m_light.y + m_light.z * m_light.z);
 
     for (int pid = 0; pid != m_faces.size(); ++pid)
     {
@@ -240,13 +243,13 @@ void ObjModel::InitTables()
         //for (auto it = face.cbegin() + 3; it != face.cend(); ++it)
         //{
         //    const auto &p = m_scaledVertices[it->v];
-        //    Double lhs(p.x * pn.plane.a + p.y * pn.plane.b +
-        //               p.z * pn.plane.c + pn.plane.d), rhs(0.0);
+        //    FloatingPoint<REAL> lhs(p.x * pn.plane.a + p.y * pn.plane.b +
+        //                            p.z * pn.plane.c + pn.plane.d), rhs(0.0f);
         //    assert(lhs.AlmostEquals(rhs));
         //}
 
         // Ignore planes that parallel to z axis.
-        Double lhs(pn.plane.c), rhs(0.0);
+        FloatingPoint<REAL> lhs(pn.plane.c), rhs(0.0f);
         if (lhs.AlmostEquals(rhs)) { continue; }
 
         pn.id = pid;
@@ -266,7 +269,7 @@ void ObjModel::InitTables()
                 //std::swap(ptop, pbtm);
             }
 
-            INT32 ptopyi = static_cast<int>(std::floor(ptop->y + 1.0));
+            INT32 ptopyi = static_cast<int>(std::floor(ptop->y + 1.0f));
             INT32 pbtmyi = static_cast<int>(std::floor(pbtm->y));
 
             if (topyi > ptopyi) topyi = ptopyi;
@@ -301,9 +304,9 @@ void ObjModel::InitTables()
         //
         //     n(a, b, c) dot l(i, j, k) = |n|*|l|*cos(theta)
 
-        double costheta = (pn.plane.a * m_light.x + pn.plane.b * m_light.y +
+        REAL costheta = (pn.plane.a * m_light.x + pn.plane.b * m_light.y +
                            pn.plane.c * m_light.z) * lightN;
-        costheta = 0.5 - costheta / 2;
+        costheta = 0.5f - costheta / 2;
 
         pn.color.red = (UINT8)std::lround(m_planeColor.red * costheta);
         pn.color.green = (UINT8)std::lround(m_planeColor.green * costheta);
@@ -326,7 +329,7 @@ void ObjModel::SetBuffer(OffscreenBuffer &buffer)
     for (INT32 y = ybegin; y < height; ++y)
     {
         std::vector<Color> frameBuffer(width, background);
-        std::vector<double> depthBuffer(width, DBL_MAX);
+        std::vector<REAL> depthBuffer(width, REAL_MAX);
 
         if (y >= m_boundingRect.top && y <= m_boundingRect.bottom)
         {
@@ -358,7 +361,7 @@ void ObjModel::SetBuffer(OffscreenBuffer &buffer)
                     continue;
                 }
 
-                Double lhs(edges[0].xtop), rhs(edges[1].xtop);
+                FloatingPoint<REAL> lhs(edges[0].xtop), rhs(edges[1].xtop);
                 if (edges[0].xtop > edges[1].xtop ||
                     lhs.AlmostEquals(rhs) && edges[0].dx > edges[1].dx)
                     std::swap(edges[0], edges[1]);
@@ -381,11 +384,12 @@ void ObjModel::SetBuffer(OffscreenBuffer &buffer)
                 activeEdgePairs.push_back(epn);
             }
 
-            for (auto epn = activeEdgePairs.begin(); epn != activeEdgePairs.end(); )
+            for (auto epn = activeEdgePairs.begin();
+                 epn != activeEdgePairs.end(); )
             {
                 INT32 xl = static_cast<int>(std::ceil(epn->l.x));
-                INT32 xr = static_cast<int>(std::ceil(epn->r.x - 1.0));
-                double z = epn->zl;
+                INT32 xr = static_cast<int>(std::ceil(epn->r.x - 1.0f));
+                REAL z = epn->zl;
                 for (INT32 x = xl; x <= xr; ++x)
                 {
                     // Ignore part of lines that go out of screen border.
@@ -454,7 +458,8 @@ void ObjModel::SetBuffer(OffscreenBuffer &buffer)
                         assert(edges.size() == 2 || edges.size() == 0);
                         if (edges.size() == 2)
                         {
-                            Double lhs(edges[0].xtop), rhs(edges[1].xtop);
+                            FloatingPoint<REAL> lhs(edges[0].xtop),
+                                                rhs(edges[1].xtop);
                             if (edges[0].xtop > edges[1].xtop ||
                                 lhs.AlmostEquals(rhs) &&
                                 edges[0].dx > edges[1].dx)

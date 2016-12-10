@@ -14,7 +14,7 @@ public:
     void Resize(INT32 width, INT32 height);
     void SetPixel(INT32 x, INT32 y, const Color &color);
     void SetRow(INT32 y, const std::vector<Color> &row);
-    void OnPaint(HDC hdc, LONG width, LONG height);
+    void OnPaint(HDC hdc, INT32 width, INT32 height);
 
     void DebugDrawBoundingRect(RECT rect, const Color &color);
     void DebugDarwRandomPicture();

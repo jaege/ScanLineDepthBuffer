@@ -49,7 +49,7 @@ void OffscreenBuffer::SetRow(INT32 y, const std::vector<Color> &row)
         *pixel++ = c.GetColorCode();
 }
 
-void OffscreenBuffer::OnPaint(HDC hdc, LONG width, LONG height)
+void OffscreenBuffer::OnPaint(HDC hdc, INT32 width, INT32 height)
 { 
     StretchDIBits(hdc, 0, 0, width, height, 0, 0, m_width, m_height,
                   m_memory, &m_info, DIB_RGB_COLORS, SRCCOPY);

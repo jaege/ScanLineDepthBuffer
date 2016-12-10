@@ -36,6 +36,9 @@
     <ClInclude Include="FloatingPoint.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Types.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MainWindow.cpp">
