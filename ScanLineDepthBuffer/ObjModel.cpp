@@ -232,6 +232,17 @@ void ObjModel::InitTables()
         pn.plane = GetPlane(m_scaledVertices[face[0].v],
                             m_scaledVertices[face[1].v],
                             m_scaledVertices[face[2].v]);
+        // NOTE(jaege): Only plane face is supported, all vertices must in the
+        //              same plane. The planse is assured to have at least 3
+        //              vertices.
+        // TODO(jaege): check why assert fail when it shouldn't.
+        //for (auto it = face.cbegin() + 3; it != face.cend(); ++it)
+        //{
+        //    const auto &p = m_scaledVertices[it->v];
+        //    Double lhs(p.x * pn.plane.a + p.y * pn.plane.b +
+        //               p.z * pn.plane.c + pn.plane.d), rhs(0.0);
+        //    assert(lhs.AlmostEquals(rhs));
+        //}
 
         // Ignore planes that parallel to z axis.
         Double lhs(pn.plane.c), rhs(0.0);
@@ -264,6 +275,7 @@ void ObjModel::InitTables()
                 edge.diffy = Pixelate(p2.y) - Pixelate(p1.y) + 1;
                 if (ytop > p1.y) ytop = p1.y;
                 if (ybottom < p2.y) ybottom = p2.y;
+                m_edges[Pixelate(p1.y) - m_boundingRect.top].push_back(edge);
             }
             else
             {
@@ -271,11 +283,8 @@ void ObjModel::InitTables()
                 edge.diffy = Pixelate(p1.y) - Pixelate(p2.y) + 1;
                 if (ytop > p2.y) ytop = p2.y;
                 if (ybottom < p1.y) ybottom = p1.y;
-            }
-            if (p1.y < p2.y)
-                m_edges[Pixelate(p1.y) - m_boundingRect.top].push_back(edge);
-            else
                 m_edges[Pixelate(p2.y) - m_boundingRect.top].push_back(edge);
+            }
         }
 
         pn.diffy = Pixelate(ybottom) - Pixelate(ytop) + 1;
@@ -290,7 +299,8 @@ void ObjModel::InitTables()
 
         double costheta = (pn.plane.a * m_light.x + pn.plane.b * m_light.y +
                            pn.plane.c * m_light.z) * lightN;
-        if (costheta < 0) costheta = -costheta;
+        //if (costheta < 0) costheta = -costheta;
+        costheta = 0.5 - costheta / 2;
 
         pn.color.red = (UINT8)std::lround(m_planeColor.red * costheta);
         pn.color.green = (UINT8)std::lround(m_planeColor.green * costheta);

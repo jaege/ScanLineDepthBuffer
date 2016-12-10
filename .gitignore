@@ -246,3 +246,6 @@ ModelManifest.xml
 
 # Model files
 !ObjModels/*
+
+# Vim temp files
+*.swp

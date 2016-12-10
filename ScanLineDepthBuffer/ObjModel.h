@@ -45,7 +45,7 @@ private:
     // scaleFactor: object scale factor on x and y axes
     void SetModelScale(LONG width, LONG height, double scaleFactor);
 
-    INT32 Pixelate(double pos);
+    static INT32 Pixelate(double pos);
 
     struct FaceNode
     {
@@ -84,7 +84,7 @@ private:
     };
 
     template <typename T>
-    Plane<typename T::value_type> GetPlane(T p1, T p2, T p3);
+    static Plane<typename T::value_type> GetPlane(T p1, T p2, T p3);
 
     struct PlaneNode
     {
