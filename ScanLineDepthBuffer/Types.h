@@ -1,9 +1,9 @@
 #pragma once
 
-//typedef unsigned char UINT8;
-//typedef unsigned int UINT32;
+typedef unsigned char UINT8;
+typedef unsigned int UINT32;
 
-//typedef signed int INT32;
+typedef signed int INT32;
 
 #ifndef DOUBLE_PRECISION
 typedef float REAL;

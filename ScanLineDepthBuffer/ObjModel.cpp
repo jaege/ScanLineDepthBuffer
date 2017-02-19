@@ -36,7 +36,7 @@ void ObjModel::LoadFromObjFile(const std::wstring & filePath)
 
     std::string line;
 
-    PositionR pos{ };
+    Position3R pos{ };
     m_vertices.push_back(pos);
     //m_vertexNormals.push_back(pos);
 
@@ -168,33 +168,31 @@ void ObjModel::SetModelScale(INT32 width, INT32 height, REAL scaleFactor)
     //       y' v
 
     assert(scaleFactor > 0);
-    REAL xScale = static_cast<REAL>(width) / (m_box.xmax - m_box.xmin);
-    REAL yScale = static_cast<REAL>(height) / (m_box.ymax - m_box.ymin);
+    REAL xScale = width / (m_box.xmax - m_box.xmin);
+    REAL yScale = height / (m_box.ymax - m_box.ymin);
 
     // Ensure that the whole object can be seen in screen when scaleFactor <= 1.
     REAL scale = min(xScale, yScale) * scaleFactor;
 
     // Round inside the rectangle.
-    m_boundingRect.left = static_cast<int>(std::ceil((m_box.xmin -
-        (m_box.xmin + m_box.xmax) / 2) * scale +
-        static_cast<REAL>(width) / 2));  // xmin'
-    m_boundingRect.right = static_cast<int>(std::floor((m_box.xmax -
-        (m_box.xmin + m_box.xmax) / 2) * scale +
-        static_cast<REAL>(width) / 2));  // xmax'
-    m_boundingRect.top = static_cast<int>(
+    m_boundingRect.left = static_cast<LONG>(std::ceil((m_box.xmin -
+        (m_box.xmin + m_box.xmax) / 2) * scale + width / 2.0f));  // xmin'
+    m_boundingRect.right = static_cast<LONG>(std::floor((m_box.xmax -
+        (m_box.xmin + m_box.xmax) / 2) * scale + width / 2.0f));  // xmax'
+    m_boundingRect.top = static_cast<LONG>(
         std::ceil(((m_box.ymin + m_box.ymax) / 2 -
-        m_box.ymax) * scale + static_cast<REAL>(height) / 2));  // ymin'
-    m_boundingRect.bottom = static_cast<int>(
+        m_box.ymax) * scale + height / 2.0f));  // ymin'
+    m_boundingRect.bottom = static_cast<LONG>(
         std::floor(((m_box.ymin + m_box.ymax) / 2 -
-        m_box.ymin) * scale + static_cast<REAL>(height) / 2));  // ymax'
+        m_box.ymin) * scale + height / 2.0f));  // ymax'
 
     m_scaledVertices.clear();
     for (auto &v : m_vertices)
     {
-        REAL xnew = (v.x - (m_box.xmin + m_box.xmax) / 2) *
-            scale + static_cast<REAL>(width) / 2;
-        REAL ynew = ((m_box.ymin + m_box.ymax) / 2 - v.y) *
-            scale + static_cast<REAL>(height) / 2;
+        REAL xnew = (v.x - (m_box.xmin + m_box.xmax) / 2) * scale +
+            width / 2.0f;
+        REAL ynew = ((m_box.ymin + m_box.ymax) / 2 - v.y) * scale +
+            height / 2.0f;
         REAL znew = (m_box.zmax - v.z) * scale;
         m_scaledVertices.push_back({xnew, ynew, znew});
     }
@@ -224,8 +222,8 @@ void ObjModel::InitTables()
     m_edges.clear();
     m_edges.resize(m_boundingRect.bottom - m_boundingRect.top + 1);
 
-    REAL lightN = static_cast<REAL>(1) / std::sqrt(
-        m_light.x * m_light.x + m_light.y * m_light.y + m_light.z * m_light.z);
+    REAL lightN = 1 / std::sqrt(m_light.x * m_light.x + m_light.y * m_light.y +
+                                m_light.z * m_light.z);
 
     for (int pid = 0; pid != m_faces.size(); ++pid)
     {
@@ -269,8 +267,8 @@ void ObjModel::InitTables()
                 //std::swap(ptop, pbtm);
             }
 
-            INT32 ptopyi = static_cast<int>(std::floor(ptop->y + 1.0f));
-            INT32 pbtmyi = static_cast<int>(std::floor(pbtm->y));
+            INT32 ptopyi = static_cast<INT32>(std::floor(ptop->y + 1.0f));
+            INT32 pbtmyi = static_cast<INT32>(std::floor(pbtm->y));
 
             if (topyi > ptopyi) topyi = ptopyi;
             if (btmyi < pbtmyi) btmyi = pbtmyi;
@@ -308,9 +306,9 @@ void ObjModel::InitTables()
                            pn.plane.c * m_light.z) * lightN;
         costheta = 0.5f - costheta / 2;
 
-        pn.color.red = (UINT8)std::lround(m_planeColor.red * costheta);
-        pn.color.green = (UINT8)std::lround(m_planeColor.green * costheta);
-        pn.color.blue = (UINT8)std::lround(m_planeColor.blue * costheta);
+        pn.color.red = static_cast<UINT8>(std::round(m_planeColor.red * costheta));
+        pn.color.green = static_cast<UINT8>(std::round(m_planeColor.green * costheta));
+        pn.color.blue = static_cast<UINT8>(std::round(m_planeColor.blue * costheta));
 
         m_planes[topyi - m_boundingRect.top].push_back(pn);
     }
@@ -387,8 +385,8 @@ void ObjModel::SetBuffer(OffscreenBuffer &buffer)
             for (auto epn = activeEdgePairs.begin();
                  epn != activeEdgePairs.end(); )
             {
-                INT32 xl = static_cast<int>(std::ceil(epn->l.x));
-                INT32 xr = static_cast<int>(std::ceil(epn->r.x - 1.0f));
+                INT32 xl = static_cast<INT32>(std::ceil(epn->l.x));
+                INT32 xr = static_cast<INT32>(std::ceil(epn->r.x - 1.0f));
                 REAL z = epn->zl;
                 for (INT32 x = xl; x <= xr; ++x)
                 {

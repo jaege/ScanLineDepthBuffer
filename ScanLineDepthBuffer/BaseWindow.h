@@ -14,7 +14,7 @@ public:
         if (uMsg == WM_NCCREATE)
         {
             CREATESTRUCT* pCreate = reinterpret_cast<CREATESTRUCT *>(lParam);
-            pThis = reinterpret_cast<DERIVED_TYPE *>(pCreate->lpCreateParams);
+            pThis = static_cast<DERIVED_TYPE *>(pCreate->lpCreateParams);
             SetWindowLongPtr(hwnd, GWLP_USERDATA,
                              reinterpret_cast<LONG_PTR>(pThis));
 

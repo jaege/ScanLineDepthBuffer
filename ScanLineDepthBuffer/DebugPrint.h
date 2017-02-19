@@ -1,5 +1,24 @@
 ﻿#pragma once
 
+// TODO(jaege): consider rewrite DebugPrint with intializer_list.
+
+// TODO(jaege): consider add debug chanel or debug level support.
+
+// TODO(jaege): consider add error code support.
+//class ErrorCode
+//{
+//public:
+//    ErrorCode(int code);
+//    std::string msg() const;
+//private:
+//    // Some code<->message tables like
+//    //     MSG1   0x01
+//    //     MSG2   0x02  ...
+//};
+//DebugPrint(ErrorCode(45), ...);
+//DebugPrint(ErrorCode(ErrorCode::SOME_MESSAGE_NAME), ...);
+//DebugPrint(ErrorCode::SOME_MESSAGE_NAME, ...);
+
 #ifdef NDEBUG
 
 #define DebugPrint(format, ...) ((void)0)

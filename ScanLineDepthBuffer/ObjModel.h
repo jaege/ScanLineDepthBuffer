@@ -5,20 +5,8 @@
 #include <Windows.h>
 #include "Types.h"
 #include "Color.h"
+#include "Tuple.h"
 #include "OffscreenBuffer.h"
-
-template <typename T>
-struct Triple
-{
-    using value_type = T;
-    T x;
-    T y;
-    T z;
-};
-
-using PositionR = Triple<REAL>;
-using PositionI = Triple<INT32>;
-using VectorR = Triple<REAL>;
 
 class ObjModel
 {
@@ -35,14 +23,14 @@ private:
     // Right-hand coordinate system, sequentially numbered, index start from 1.
     // This number sequence continues even when vertex data is separated by
     // other data.
-    std::vector<PositionR> m_vertices;  // geometric vertices
-    //std::vector<PositionR> m_vertexNormals;
+    std::vector<Position3R> m_vertices;  // geometric vertices
+    //std::vector<Position3R> m_vertexNormals;
 
-    std::vector<PositionR> m_scaledVertices;
+    std::vector<Position3R> m_scaledVertices;
 
     // width: buffer width in pixel
     // height: buffer height in pixel
-    // scaleFactor: object scale factor on x and y axes
+    // scaleFactor: object scale factor, must be positive, 1 means original size
     void SetModelScale(INT32 width, INT32 height, REAL scaleFactor);
 
     struct FaceNode
@@ -118,7 +106,7 @@ private:
         UINT32 planeId;
     };
 
-    VectorR m_light{1.0f, 1.5f, 1.0f};  // Light direction vector
+    Vector3R m_light{1.0f, 1.5f, 1.0f};  // Light direction vector
 
     Color m_planeColor = Color::WHITE;
 
