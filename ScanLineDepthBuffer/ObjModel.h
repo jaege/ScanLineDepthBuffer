@@ -13,7 +13,8 @@ class ObjModel
 public:
     void LoadFromObjFile(const std::wstring &filePath);
 
-    void SetModelScale(const OffscreenBuffer &buffer, REAL scaleFactor = 1.0f);
+    void SetModelScale(const OffscreenBuffer &buffer, REAL scaleFactor = 1.0f,
+                       REAL degreeX = 0.0f, REAL degreeY = 0.0f);
 
     void SetBuffer(OffscreenBuffer &buffer);
 
@@ -31,7 +32,11 @@ private:
     // width: buffer width in pixel
     // height: buffer height in pixel
     // scaleFactor: object scale factor, must be positive, 1 means original size
-    void SetModelScale(INT32 width, INT32 height, REAL scaleFactor);
+    // degreeX: rotate about x axis, mesured in degree
+    // degreeX: rotate about y axis, mesured in degree
+    void SetModelScale(INT32 width, INT32 height, REAL scaleFactor, REAL degreeX, REAL degreeY);
+    //void SetModelScale(INT32 width, INT32 height, REAL scaleFactor);
+
 
     struct FaceNode
     {

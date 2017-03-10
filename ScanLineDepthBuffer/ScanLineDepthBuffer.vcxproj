@@ -117,8 +117,11 @@
     <ClInclude Include="DebugPrint.h" />
     <ClInclude Include="FloatingPoint.h" />
     <ClInclude Include="MainWindow.h" />
+    <ClInclude Include="Matrix.h" />
     <ClInclude Include="ObjModel.h" />
     <ClInclude Include="OffscreenBuffer.h" />
+    <ClInclude Include="Transformation.h" />
+    <ClInclude Include="Tuple.h" />
     <ClInclude Include="Types.h" />
   </ItemGroup>
   <ItemGroup>
@@ -128,6 +131,7 @@
     <ClCompile Include="MainWindow.cpp" />
     <ClCompile Include="ObjModel.cpp" />
     <ClCompile Include="OffscreenBuffer.cpp" />
+    <ClCompile Include="Transformation.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

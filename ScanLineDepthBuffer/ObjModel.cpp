@@ -10,6 +10,9 @@
 #include "ObjModel.h"
 #include "DebugPrint.h"
 #include "OffscreenBuffer.h"
+#include "Transformation.h"
+#include "Matrix.h"
+#include "Tuple.h" // Vector4R
 
 void ObjModel::LoadFromObjFile(const std::wstring & filePath)
 {
@@ -121,11 +124,13 @@ void ObjModel::LoadFromObjFile(const std::wstring & filePath)
                m_vertices.size() - 1, m_faces.size());
 }
 
-void ObjModel::SetModelScale(const OffscreenBuffer &buffer, REAL scaleFactor)
+void ObjModel::SetModelScale(const OffscreenBuffer &buffer, REAL scaleFactor,
+                             REAL degreeX, REAL degreeY)
 {
-    SetModelScale(buffer.GetWidth(), buffer.GetHeight(), scaleFactor);
+    SetModelScale(buffer.GetWidth(), buffer.GetHeight(), scaleFactor, degreeX, degreeY);
 }
 
+/*
 void ObjModel::SetModelScale(INT32 width, INT32 height, REAL scaleFactor)
 {
     // Transform object from object coordinate to screen coordinate, and move
@@ -174,7 +179,7 @@ void ObjModel::SetModelScale(INT32 width, INT32 height, REAL scaleFactor)
     // Ensure that the whole object can be seen in screen when scaleFactor <= 1.
     REAL scale = min(xScale, yScale) * scaleFactor;
 
-    // Round inside the rectangle.
+    // Round inside the bounding rectangle.
     m_boundingRect.left = static_cast<LONG>(std::ceil((m_box.xmin -
         (m_box.xmin + m_box.xmax) / 2) * scale + width / 2.0f));  // xmin'
     m_boundingRect.right = static_cast<LONG>(std::floor((m_box.xmax -
@@ -196,6 +201,52 @@ void ObjModel::SetModelScale(INT32 width, INT32 height, REAL scaleFactor)
         REAL znew = (m_box.zmax - v.z) * scale;
         m_scaledVertices.push_back({xnew, ynew, znew});
     }
+}
+*/
+
+void ObjModel::SetModelScale(INT32 width, INT32 height, REAL scaleFactor,
+                             REAL degreeX, REAL degreeY)
+{
+    assert(scaleFactor > 0);
+    REAL xScale = width / (m_box.xmax - m_box.xmin);
+    REAL yScale = height / (m_box.ymax - m_box.ymin);
+
+    // Ensure that the whole object can be seen in screen when scaleFactor <= 1.
+    REAL scale = min(xScale, yScale) * scaleFactor;
+
+    // The matrices are mulitplied in reverse order, i.e. last tranformation comes first.
+    Matrix4x4R transform =
+        Transformation::Translate(width / 2.0f, height / 2.0f, 0) *
+        Transformation::Scale(scale) *
+        Transformation::RotateAboutXAxis(degreeX) *
+        Transformation::RotateAboutYAxis(degreeY) *
+        Transformation::Symmetry(true, false, true) *
+        Transformation::Translate(-(m_box.xmin + m_box.xmax) / 2,
+                                  -(m_box.ymin + m_box.ymax) / 2,
+                                  -(m_box.zmin + m_box.zmax) / 2);
+
+    m_scaledVertices.clear();
+    REAL left = REAL_MAX;
+    REAL right = REAL_MIN;
+    REAL top = REAL_MAX;
+    REAL bottom = REAL_MIN;
+
+    for (auto &v : m_vertices)
+    {
+        Vector4R newPos = transform * Vector4R{v.x, v.y, v.z, 1.0f};
+        if (newPos.x < left) left = newPos.x;
+        if (newPos.x > right) right = newPos.x;
+        if (newPos.y < top) top = newPos.y;
+        if (newPos.y > bottom) bottom = newPos.y;
+        // The following push_back call cannot be moved before comparing x and y.
+        m_scaledVertices.push_back({newPos.x, newPos.y, newPos.z});
+    }
+
+    // Round inside the bounding rectangle.
+    m_boundingRect.left = static_cast<LONG>(std::ceil(left));  // xmin'
+    m_boundingRect.right = static_cast<LONG>(std::floor(right));  // xmax'
+    m_boundingRect.top = static_cast<LONG>(std::ceil(top));  // ymin'
+    m_boundingRect.bottom = static_cast<LONG>(std::floor(bottom));  // ymax'
 }
 
 template <typename T>

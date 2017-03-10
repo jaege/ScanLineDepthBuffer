@@ -1,6 +1,6 @@
 ﻿# 扫描线Z缓冲器算法的实现
 
-Version：2016年12月
+Version：2017年3月
 
 注：本文中的算法描述对应版本为commit #649f2e36。截图对应版本为commit #0916edf6。
 
@@ -15,12 +15,12 @@ Version：2016年12月
   + Intel(R) HD Graphics 520
   + 16GB RAM
 * Operating System
-  + Windows 10 家庭版 版本1607
+  + Windows 10 Version 1607
 * IDE
   + Microsoft Visual Studio Community 2015 版本 14.0.25123.00 Update 2
 * Version Control System
   + Git
-* Programming Language, Library and API
+* Programming Language and Library
   + C++11
   + C++ STL
   + Win32 API
@@ -276,7 +276,8 @@ struct Color
 
 图 5-3 模型teapot_wt.obj在不同窗口比例下的显示效果
 
-程序支持模型缩放功能，按`Z`键和`C`键可以放大或缩小模型。
+程序支持模型缩放功能，按`Z`和`C`键可以放大或缩小模型。
+程序支持模型旋转功能，按`I`、`J`、`K`和`L`键可以旋转模型。
 
 ### 5.2 内部参数设置
 

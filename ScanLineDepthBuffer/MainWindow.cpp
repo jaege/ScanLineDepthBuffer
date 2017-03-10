@@ -7,7 +7,11 @@
 LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     static REAL scaleFactor = 0.95f;
-    const REAL scaleFactorStep = 0.05f;
+    constexpr REAL scaleFactorStep = 0.05f;
+    static REAL degreeX = 0.0f;
+    static REAL degreeY = 0.0f;
+    constexpr REAL degreeStep = 5.0f;
+
     switch (uMsg)
     {
     //case WM_CLOSE:
@@ -28,7 +32,7 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
             case L'Z':
                 {
                     if (scaleFactor < 50.0f) { scaleFactor += scaleFactorStep; }
-                    m_objModel.SetModelScale(m_buffer, scaleFactor);
+                    m_objModel.SetModelScale(m_buffer, scaleFactor, degreeX, degreeY);
                     m_objModel.SetBuffer(m_buffer);
                     InvalidateRect(m_hwnd, NULL, FALSE);
                 }
@@ -37,7 +41,51 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
             case L'C':
                 {
                     if (scaleFactor > 0.05f) { scaleFactor -= scaleFactorStep; }
-                    m_objModel.SetModelScale(m_buffer, scaleFactor);
+                    m_objModel.SetModelScale(m_buffer, scaleFactor, degreeX, degreeY);
+                    m_objModel.SetBuffer(m_buffer);
+                    InvalidateRect(m_hwnd, NULL, FALSE);
+                }
+                break;
+            case L'j':
+            case L'J':
+                // Rotate object about y axis.
+                {
+                    degreeY -= degreeStep;
+                    if (degreeY < -360) degreeY += 360;
+                    m_objModel.SetModelScale(m_buffer, scaleFactor, degreeX, degreeY);
+                    m_objModel.SetBuffer(m_buffer);
+                    InvalidateRect(m_hwnd, NULL, FALSE);
+                }
+                break;
+            case L'l':
+            case L'L':
+                // Rotate object about y axis.
+                {
+                    degreeY += degreeStep;
+                    if (degreeY > 360) degreeY -= 360;
+                    m_objModel.SetModelScale(m_buffer, scaleFactor, degreeX, degreeY);
+                    m_objModel.SetBuffer(m_buffer);
+                    InvalidateRect(m_hwnd, NULL, FALSE);
+                }
+                break;
+            case L'i':
+            case L'I':
+                // Rotate object about x axis.
+                {
+                    degreeX += degreeStep;
+                    if (degreeX > 360) degreeX -= 360;
+                    m_objModel.SetModelScale(m_buffer, scaleFactor, degreeX, degreeY);
+                    m_objModel.SetBuffer(m_buffer);
+                    InvalidateRect(m_hwnd, NULL, FALSE);
+                }
+                break;
+            case L'k':
+            case L'K':
+                // Rotate object about x axis.
+                {
+                    degreeX -= degreeStep;
+                    if (degreeX < -360) degreeX += 360;
+                    m_objModel.SetModelScale(m_buffer, scaleFactor, degreeX, degreeY);
                     m_objModel.SetBuffer(m_buffer);
                     InvalidateRect(m_hwnd, NULL, FALSE);
                 }
@@ -45,11 +93,9 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
         }
         return DefWindowProc(m_hwnd, uMsg, wParam, lParam);
-
+/*
     case WM_LBUTTONDOWN:
         DebugPrint(L"WM_LBUTTONDOWN");
-        // Rotate object about y axis.
-
         return DefWindowProc(m_hwnd, uMsg, wParam, lParam);
 
     case WM_LBUTTONUP:
@@ -58,14 +104,12 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_RBUTTONDOWN:
         DebugPrint(L"WM_RBUTTONDOWN");
-        // Rotate object about x axis.
-
         return DefWindowProc(m_hwnd, uMsg, wParam, lParam);
 
     case WM_RBUTTONUP:
         DebugPrint(L"WM_RBUTTONUP");
         return DefWindowProc(m_hwnd, uMsg, wParam, lParam);
-
+*/
     case WM_DESTROY:
         DebugPrint(L"WM_DESTROY");
         PostQuitMessage(0);
@@ -82,7 +126,7 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
             m_buffer.Resize(width, height);
             //m_buffer.DebugDarwRandomPicture();
 
-            m_objModel.SetModelScale(m_buffer, scaleFactor);
+            m_objModel.SetModelScale(m_buffer, scaleFactor, degreeX, degreeY);
             m_objModel.SetBuffer(m_buffer);
         }
         return 0;

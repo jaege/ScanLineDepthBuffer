@@ -39,6 +39,15 @@
     <ClInclude Include="Types.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Transformation.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Tuple.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Matrix.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MainWindow.cpp">
@@ -57,6 +66,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Color.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Transformation.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
