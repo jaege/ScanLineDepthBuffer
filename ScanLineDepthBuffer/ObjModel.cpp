@@ -4,12 +4,9 @@
 #include <cassert>  // assert()
 #include <cmath>  // std::lround() std::sqrt()
 #include <utility>  // std::swap()
-#include <Windows.h>
-#include "Types.h"
-#include "FloatingPoint.h"
 #include "ObjModel.h"
+#include "FloatingPoint.h"
 #include "DebugPrint.h"
-#include "OffscreenBuffer.h"
 #include "Transformation.h"
 #include "Matrix.h"
 #include "Tuple.h" // Vector4R
@@ -86,7 +83,7 @@ void ObjModel::LoadFromObjFile(const std::wstring & filePath)
             // Index 0 means not present in file.
             {
                 std::vector<FaceNode> face;
-                int v, vt, vn;  
+                int v, vt, vn;
                 while (iss >> faceStrBuffer)
                 {
                     std::istringstream fsb(faceStrBuffer);
@@ -113,7 +110,7 @@ void ObjModel::LoadFromObjFile(const std::wstring & filePath)
                 m_faces.push_back(face);
             }
             break;
-            
+
         default:
             // Ignore other cases.
             break;
@@ -123,86 +120,6 @@ void ObjModel::LoadFromObjFile(const std::wstring & filePath)
     DebugPrint(L"[INF] Model has %d vertices, %d faces.",
                m_vertices.size() - 1, m_faces.size());
 }
-
-void ObjModel::SetModelScale(const OffscreenBuffer &buffer, REAL scaleFactor,
-                             REAL degreeX, REAL degreeY)
-{
-    SetModelScale(buffer.GetWidth(), buffer.GetHeight(), scaleFactor, degreeX, degreeY);
-}
-
-/*
-void ObjModel::SetModelScale(INT32 width, INT32 height, REAL scaleFactor)
-{
-    // Transform object from object coordinate to screen coordinate, and move
-    // it to the center of the screen space.
-    //
-    //     xScale = width / (xmax - xmin)
-    //     yScale = height / (ymax - ymin)
-    //     scale = min(xScale, yScale) * scaleFactor
-    //
-    //     x' = (x - (xmin + xmax) / 2) * scale + width / 2
-    //     y' = ((ymin + ymax) / 2 - y) * scale + height / 2
-    //     z' = (zmax - z) * scale
-    //
-    // Old coordinate: (object space)
-    //
-    //        y ^
-    //          |
-    //          |
-    //          |
-    //          |
-    //          +---------> x
-    //         /
-    //        /
-    //       /
-    //      /
-    //     v z
-    //
-    // New coordinate: (screen space, x' and y' in pixel)
-    //
-    //               ^ z'
-    //              /
-    //             /
-    //            /
-    //           /
-    //          +---------> x'
-    //          |
-    //          |
-    //          |
-    //          |
-    //       y' v
-
-    assert(scaleFactor > 0);
-    REAL xScale = width / (m_box.xmax - m_box.xmin);
-    REAL yScale = height / (m_box.ymax - m_box.ymin);
-
-    // Ensure that the whole object can be seen in screen when scaleFactor <= 1.
-    REAL scale = min(xScale, yScale) * scaleFactor;
-
-    // Round inside the bounding rectangle.
-    m_boundingRect.left = static_cast<LONG>(std::ceil((m_box.xmin -
-        (m_box.xmin + m_box.xmax) / 2) * scale + width / 2.0f));  // xmin'
-    m_boundingRect.right = static_cast<LONG>(std::floor((m_box.xmax -
-        (m_box.xmin + m_box.xmax) / 2) * scale + width / 2.0f));  // xmax'
-    m_boundingRect.top = static_cast<LONG>(
-        std::ceil(((m_box.ymin + m_box.ymax) / 2 -
-        m_box.ymax) * scale + height / 2.0f));  // ymin'
-    m_boundingRect.bottom = static_cast<LONG>(
-        std::floor(((m_box.ymin + m_box.ymax) / 2 -
-        m_box.ymin) * scale + height / 2.0f));  // ymax'
-
-    m_scaledVertices.clear();
-    for (auto &v : m_vertices)
-    {
-        REAL xnew = (v.x - (m_box.xmin + m_box.xmax) / 2) * scale +
-            width / 2.0f;
-        REAL ynew = ((m_box.ymin + m_box.ymax) / 2 - v.y) * scale +
-            height / 2.0f;
-        REAL znew = (m_box.zmax - v.z) * scale;
-        m_scaledVertices.push_back({xnew, ynew, znew});
-    }
-}
-*/
 
 void ObjModel::SetModelScale(INT32 width, INT32 height, REAL scaleFactor,
                              REAL degreeX, REAL degreeY)
@@ -238,7 +155,8 @@ void ObjModel::SetModelScale(INT32 width, INT32 height, REAL scaleFactor,
         if (newPos.x > right) right = newPos.x;
         if (newPos.y < top) top = newPos.y;
         if (newPos.y > bottom) bottom = newPos.y;
-        // The following push_back call cannot be moved before comparing x and y.
+        // TODO(jaege): find out why the following push_back call cannot be
+        //     moved before comparing x and y.
         m_scaledVertices.push_back({newPos.x, newPos.y, newPos.z});
     }
 
@@ -253,16 +171,16 @@ template <typename T>
 ObjModel::Plane<typename T::value_type> ObjModel::GetPlane(T p1, T p2, T p3)
 {
     T::value_type a = (p2.y - p1.y) * (p3.z - p1.z) -
-                      (p3.y - p1.y) * (p2.z - p1.z);
+        (p3.y - p1.y) * (p2.z - p1.z);
     T::value_type b = (p3.x - p1.x) * (p2.z - p1.z) -
-                      (p2.x - p1.x) * (p3.z - p1.z);
+        (p2.x - p1.x) * (p3.z - p1.z);
     T::value_type c = (p2.x - p1.x) * (p3.y - p1.y) -
-                      (p3.x - p1.x) * (p2.y - p1.y);
+        (p3.x - p1.x) * (p2.y - p1.y);
     T::value_type d = -(p1.x * a + p1.y * b + p1.z * c);
     T::value_type n = std::sqrt(a * a + b * b + c * c);
     assert(n != 0);
     // Normalize (a, b, c) so that this is the normal vector of the face.
-    return {a / n, b / n, c / n, d / n};
+    return{a / n, b / n, c / n, d / n};
 }
 
 void ObjModel::InitTables()
@@ -354,7 +272,7 @@ void ObjModel::InitTables()
         //     n(a, b, c) dot l(i, j, k) = |n|*|l|*cos(theta)
 
         REAL costheta = (pn.plane.a * m_light.x + pn.plane.b * m_light.y +
-                           pn.plane.c * m_light.z) * lightN;
+                         pn.plane.c * m_light.z) * lightN;
         costheta = 0.5f - costheta / 2;
 
         pn.color.red = static_cast<UINT8>(std::round(m_planeColor.red * costheta));
@@ -365,8 +283,12 @@ void ObjModel::InitTables()
     }
 }
 
-void ObjModel::SetBuffer(OffscreenBuffer &buffer)
+void ObjModel::GetBuffer(OffscreenBuffer &buffer, REAL scaleFactor,
+                         REAL degreeX, REAL degreeY)
 {
+    SetModelScale(buffer.GetWidth(), buffer.GetHeight(), scaleFactor,
+                  degreeX, degreeY);
+
     InitTables();
 
     std::vector<PlaneNode> activePlanes;
@@ -413,7 +335,9 @@ void ObjModel::SetBuffer(OffscreenBuffer &buffer)
                 FloatingPoint<REAL> lhs(edges[0].xtop), rhs(edges[1].xtop);
                 if (edges[0].xtop > edges[1].xtop ||
                     lhs.AlmostEquals(rhs) && edges[0].dx > edges[1].dx)
+                {
                     std::swap(edges[0], edges[1]);
+                }
 
                 ActiveEdgePairNode epn;
                 epn.l.x = edges[0].xtop;
@@ -502,7 +426,9 @@ void ObjModel::SetBuffer(OffscreenBuffer &buffer)
                              m_edges[y - m_boundingRect.top + 1])
                         {
                             if (edge.planeId == epn->planeId)
+                            {
                                 edges.push_back(edge);
+                            }
                         }
                         assert(edges.size() == 2 || edges.size() == 0);
                         if (edges.size() == 2)
@@ -512,7 +438,9 @@ void ObjModel::SetBuffer(OffscreenBuffer &buffer)
                             if (edges[0].xtop > edges[1].xtop ||
                                 lhs.AlmostEquals(rhs) &&
                                 edges[0].dx > edges[1].dx)
+                            {
                                 std::swap(edges[0], edges[1]);
+                            }
                             epn->l.x = edges[0].xtop;
                             epn->l.dx = edges[0].dx;
                             epn->l.diffy = edges[0].diffy;
@@ -526,7 +454,6 @@ void ObjModel::SetBuffer(OffscreenBuffer &buffer)
                             epn = activeEdgePairs.erase(epn);
                             continue;
                         }
-
                     }
                     else if (epn->l.diffy == 0)
                     {
@@ -597,8 +524,10 @@ void ObjModel::SetBuffer(OffscreenBuffer &buffer)
     }
 
     // For debug purpose, draw all vertices.
-    //for (const auto & v : m_scaledVertices)
-    //    buffer.SetPixel(std::lround(v.x), std::lround(v.y), Color::GREEN);
+    for (const auto & v : m_scaledVertices)
+    {
+        buffer.DebugDrawPoint(std::lround(v.x), std::lround(v.y), Color::GREEN);
+    }
     // For debug purpose, draw bounding rectangle.
-    buffer.DebugDrawBoundingRect(m_boundingRect, Color::BLUE);
+    buffer.DebugDrawRectangle(m_boundingRect, Color::BLUE);
 }

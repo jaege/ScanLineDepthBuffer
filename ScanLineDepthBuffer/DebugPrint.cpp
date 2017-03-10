@@ -1,16 +1,14 @@
 ﻿#include <stdio.h>
 #include <wchar.h>
-
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
-
 #include <Windows.h>
 #include "DebugPrint.h"
 
-#define MAX_ERROR_MESSAGE_LENGTH 1024
+static constexpr int MAX_ERROR_MESSAGE_LENGTH = 1024;
 
-int DebugPrintVFA(const char *format, va_list argList)
+int DebugPrintVFA(const char * format, va_list argList)
 {
     static char s_buffer[MAX_ERROR_MESSAGE_LENGTH];
 
@@ -19,7 +17,7 @@ int DebugPrintVFA(const char *format, va_list argList)
     return ret;
 }
 
-int DebugPrintVFW(const wchar_t *format, va_list argList)
+int DebugPrintVFW(const wchar_t * format, va_list argList)
 {
     static wchar_t s_buffer[MAX_ERROR_MESSAGE_LENGTH];
 
@@ -37,7 +35,7 @@ int DebugPrintFA(const char * format, ...)
     return ret;
 }
 
-int DebugPrintFW(const wchar_t *format, ...)
+int DebugPrintFW(const wchar_t * format, ...)
 {
     va_list argList;
     va_start(argList, format);

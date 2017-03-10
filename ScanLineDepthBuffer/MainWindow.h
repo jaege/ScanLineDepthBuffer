@@ -9,13 +9,12 @@
 class MainWindow : public BaseWindow<MainWindow>
 {
 public:
-    MainWindow() : m_buffer(), m_objModel() { }
-    PCWSTR ClassName() const { return L"MainWindow"; }
-    LRESULT HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam);
+    MainWindow() : m_objModel{ } { }
+    PCWSTR ClassName() const override { return L"MainWindow"; }
+    LRESULT HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
     void OpenObjFile();
 
 private:
-    OffscreenBuffer m_buffer;
     ObjModel m_objModel;
 };

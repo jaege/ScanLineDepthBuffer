@@ -22,7 +22,7 @@ class Tuple
 {
 public:
     using value_type = T;
-    Tuple() : val{} { }
+    Tuple() : val{ } { }
     template <typename U>
     Tuple(std::initializer_list<U> il)
     {
@@ -53,7 +53,8 @@ template <typename T>
 struct Quaternion : public Tuple<T, 4>
 {
     template <typename U>
-    friend Quaternion<U> operator*(const Matrix<U, 4>& lhs, const Quaternion<U>& rhs);
+    friend Quaternion<U> operator*(const Matrix<U, 4> & lhs,
+                                   const Quaternion<U> & rhs);
 
     using Tuple::Tuple;
     T &x = val[0];

@@ -25,9 +25,9 @@
 
 #else
 
-int DebugPrintVFA(const char *format, va_list argList);
+int DebugPrintVFA(const char * format, va_list argList);
 
-int DebugPrintVFW(const wchar_t *format, va_list argList);
+int DebugPrintVFW(const wchar_t * format, va_list argList);
 
 #ifdef UNICODE
 #define DebugPrintVF  DebugPrintVFW
@@ -35,16 +35,15 @@ int DebugPrintVFW(const wchar_t *format, va_list argList);
 #define DebugPrintVF  DebugPrintVFA
 #endif // !UNICODE
 
-int DebugPrintFA(const char *format, ...);
+int DebugPrintFA(const char * format, ...);
 
-int DebugPrintFW(const wchar_t *format, ...);
+int DebugPrintFW(const wchar_t * format, ...);
 
 #ifdef UNICODE
 #define DebugPrintF  DebugPrintFW
 #else
 #define DebugPrintF  DebugPrintFA
 #endif // !UNICODE
-
 
 #ifdef UNICODE
 #define DebugPrint(format, ...) DebugPrintFW(format L"\n", __VA_ARGS__)

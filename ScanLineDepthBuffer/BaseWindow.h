@@ -2,6 +2,9 @@
 
 #include <Windows.h>
 
+/*
+ * Abstract base window class
+ */
 template <typename DERIVED_TYPE>
 class BaseWindow
 {

@@ -1,11 +1,13 @@
 ﻿#include <string>
 #include <Windows.h>
-#include <shobjidl.h> 
+#include <shobjidl.h>
 #include "MainWindow.h"
 #include "DebugPrint.h"
 
 LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+    static OffscreenBuffer buffer;
+
     static REAL scaleFactor = 0.95f;
     constexpr REAL scaleFactorStep = 0.05f;
     static REAL degreeX = 0.0f;
@@ -32,8 +34,7 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
             case L'Z':
                 {
                     if (scaleFactor < 50.0f) { scaleFactor += scaleFactorStep; }
-                    m_objModel.SetModelScale(m_buffer, scaleFactor, degreeX, degreeY);
-                    m_objModel.SetBuffer(m_buffer);
+                    m_objModel.GetBuffer(buffer, scaleFactor, degreeX, degreeY);
                     InvalidateRect(m_hwnd, NULL, FALSE);
                 }
                 break;
@@ -41,8 +42,7 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
             case L'C':
                 {
                     if (scaleFactor > 0.05f) { scaleFactor -= scaleFactorStep; }
-                    m_objModel.SetModelScale(m_buffer, scaleFactor, degreeX, degreeY);
-                    m_objModel.SetBuffer(m_buffer);
+                    m_objModel.GetBuffer(buffer, scaleFactor, degreeX, degreeY);
                     InvalidateRect(m_hwnd, NULL, FALSE);
                 }
                 break;
@@ -52,8 +52,7 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 {
                     degreeY -= degreeStep;
                     if (degreeY < -360) degreeY += 360;
-                    m_objModel.SetModelScale(m_buffer, scaleFactor, degreeX, degreeY);
-                    m_objModel.SetBuffer(m_buffer);
+                    m_objModel.GetBuffer(buffer, scaleFactor, degreeX, degreeY);
                     InvalidateRect(m_hwnd, NULL, FALSE);
                 }
                 break;
@@ -63,8 +62,7 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 {
                     degreeY += degreeStep;
                     if (degreeY > 360) degreeY -= 360;
-                    m_objModel.SetModelScale(m_buffer, scaleFactor, degreeX, degreeY);
-                    m_objModel.SetBuffer(m_buffer);
+                    m_objModel.GetBuffer(buffer, scaleFactor, degreeX, degreeY);
                     InvalidateRect(m_hwnd, NULL, FALSE);
                 }
                 break;
@@ -74,8 +72,7 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 {
                     degreeX += degreeStep;
                     if (degreeX > 360) degreeX -= 360;
-                    m_objModel.SetModelScale(m_buffer, scaleFactor, degreeX, degreeY);
-                    m_objModel.SetBuffer(m_buffer);
+                    m_objModel.GetBuffer(buffer, scaleFactor, degreeX, degreeY);
                     InvalidateRect(m_hwnd, NULL, FALSE);
                 }
                 break;
@@ -85,31 +82,30 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 {
                     degreeX -= degreeStep;
                     if (degreeX < -360) degreeX += 360;
-                    m_objModel.SetModelScale(m_buffer, scaleFactor, degreeX, degreeY);
-                    m_objModel.SetBuffer(m_buffer);
+                    m_objModel.GetBuffer(buffer, scaleFactor, degreeX, degreeY);
                     InvalidateRect(m_hwnd, NULL, FALSE);
                 }
                 break;
             }
         }
         return DefWindowProc(m_hwnd, uMsg, wParam, lParam);
-/*
-    case WM_LBUTTONDOWN:
-        DebugPrint(L"WM_LBUTTONDOWN");
-        return DefWindowProc(m_hwnd, uMsg, wParam, lParam);
 
-    case WM_LBUTTONUP:
-        DebugPrint(L"WM_LBUTTONUP");
-        return DefWindowProc(m_hwnd, uMsg, wParam, lParam);
+    //case WM_LBUTTONDOWN:
+    //    DebugPrint(L"WM_LBUTTONDOWN");
+    //    return DefWindowProc(m_hwnd, uMsg, wParam, lParam);
 
-    case WM_RBUTTONDOWN:
-        DebugPrint(L"WM_RBUTTONDOWN");
-        return DefWindowProc(m_hwnd, uMsg, wParam, lParam);
+    //case WM_LBUTTONUP:
+    //    DebugPrint(L"WM_LBUTTONUP");
+    //    return DefWindowProc(m_hwnd, uMsg, wParam, lParam);
 
-    case WM_RBUTTONUP:
-        DebugPrint(L"WM_RBUTTONUP");
-        return DefWindowProc(m_hwnd, uMsg, wParam, lParam);
-*/
+    //case WM_RBUTTONDOWN:
+    //    DebugPrint(L"WM_RBUTTONDOWN");
+    //    return DefWindowProc(m_hwnd, uMsg, wParam, lParam);
+
+    //case WM_RBUTTONUP:
+    //    DebugPrint(L"WM_RBUTTONUP");
+    //    return DefWindowProc(m_hwnd, uMsg, wParam, lParam);
+
     case WM_DESTROY:
         DebugPrint(L"WM_DESTROY");
         PostQuitMessage(0);
@@ -122,12 +118,10 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
             GetClientRect(m_hwnd, &rc);
             INT32 width = rc.right - rc.left;
             INT32 height = rc.bottom - rc.top;
-
-            m_buffer.Resize(width, height);
+            buffer.Resize(width, height);
             //m_buffer.DebugDarwRandomPicture();
 
-            m_objModel.SetModelScale(m_buffer, scaleFactor, degreeX, degreeY);
-            m_objModel.SetBuffer(m_buffer);
+            m_objModel.GetBuffer(buffer, scaleFactor, degreeX, degreeY);
         }
         return 0;
 
@@ -141,8 +135,7 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
             GetClientRect(m_hwnd, &rc);
             INT32 width = rc.right - rc.left;
             INT32 height = rc.bottom - rc.top;
-
-            m_buffer.OnPaint(hdc, width, height);
+            buffer.OnPaint(hdc, width, height);
 
             EndPaint(m_hwnd, &ps);
         }
@@ -159,7 +152,7 @@ void MainWindow::OpenObjFile()
     {
         IFileOpenDialog *pFileOpen;
 
-        hr = CoCreateInstance(__uuidof(FileOpenDialog), NULL, CLSCTX_ALL, 
+        hr = CoCreateInstance(__uuidof(FileOpenDialog), NULL, CLSCTX_ALL,
                               IID_PPV_ARGS(&pFileOpen));
 
         if (SUCCEEDED(hr))
@@ -189,7 +182,7 @@ void MainWindow::OpenObjFile()
 
                         m_objModel.LoadFromObjFile(pszFilePath);
 
-                        const UINT32 MAX_CHARS = 1024;
+                        constexpr UINT32 MAX_CHARS = 1024;
                         WCHAR s_buffer[MAX_CHARS];
                         WCHAR windowTitle[MAX_CHARS];
                         GetWindowText(m_hwnd, windowTitle,

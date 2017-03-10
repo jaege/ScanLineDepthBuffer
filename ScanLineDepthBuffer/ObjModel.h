@@ -2,21 +2,22 @@
 
 #include <string>
 #include <vector>
-#include <Windows.h>
+#include <Windows.h>  // RECT
 #include "Types.h"
 #include "Color.h"
-#include "Tuple.h"
+#include "Tuple.h"  // Vector3R
 #include "OffscreenBuffer.h"
 
 class ObjModel
 {
 public:
-    void LoadFromObjFile(const std::wstring &filePath);
+    void LoadFromObjFile(const std::wstring & filePath);
 
-    void SetModelScale(const OffscreenBuffer &buffer, REAL scaleFactor = 1.0f,
-                       REAL degreeX = 0.0f, REAL degreeY = 0.0f);
-
-    void SetBuffer(OffscreenBuffer &buffer);
+    // scaleFactor: object scale factor, must be positive, 1 means original size
+    // degreeX: rotate about x axis, mesured in degree
+    // degreeX: rotate about y axis, mesured in degree
+    void GetBuffer(OffscreenBuffer & buffer, REAL scaleFactor = 1.0f,
+                   REAL degreeX = 0.0f, REAL degreeY = 0.0f);
 
 private:
     std::wstring m_filePath;
@@ -25,6 +26,7 @@ private:
     // This number sequence continues even when vertex data is separated by
     // other data.
     std::vector<Position3R> m_vertices;  // geometric vertices
+
     //std::vector<Position3R> m_vertexNormals;
 
     std::vector<Position3R> m_scaledVertices;
@@ -34,9 +36,8 @@ private:
     // scaleFactor: object scale factor, must be positive, 1 means original size
     // degreeX: rotate about x axis, mesured in degree
     // degreeX: rotate about y axis, mesured in degree
-    void SetModelScale(INT32 width, INT32 height, REAL scaleFactor, REAL degreeX, REAL degreeY);
-    //void SetModelScale(INT32 width, INT32 height, REAL scaleFactor);
-
+    void SetModelScale(INT32 width, INT32 height, REAL scaleFactor,
+                       REAL degreeX, REAL degreeY);
 
     struct FaceNode
     {
@@ -49,16 +50,14 @@ private:
 
     struct BoundingBox
     {
-        REAL xmin;
-        REAL xmax;
-        REAL ymin;
-        REAL ymax;
-        REAL zmin;
-        REAL zmax;
+        REAL xmin; REAL xmax;
+        REAL ymin; REAL ymax;
+        REAL zmin; REAL zmax;
 
-        BoundingBox() : xmin(REAL_MAX), xmax(REAL_MIN),
-                        ymin(REAL_MAX), ymax(REAL_MIN),
-                        zmin(REAL_MAX), zmax(REAL_MIN)
+        BoundingBox() :
+            xmin(REAL_MAX), xmax(REAL_MIN),
+            ymin(REAL_MAX), ymax(REAL_MIN),
+            zmin(REAL_MAX), zmax(REAL_MIN)
         { }
     };
 
@@ -117,5 +116,4 @@ private:
 
     // Initialize plane tables and edge tables.
     void InitTables();
-
 };

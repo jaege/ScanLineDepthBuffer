@@ -12,5 +12,5 @@ typedef float REAL;
 #else
 typedef double REAL;
 #define REAL_MAX DBL_MAX
-#define REAL_MIN DBL_MIN 
+#define REAL_MIN DBL_MIN
 #endif

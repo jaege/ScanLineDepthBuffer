@@ -13,9 +13,11 @@ template <typename T, size_t N>
 class Matrix
 {
     template <typename U, size_t M>
-    friend Matrix<U, M> operator*(const Matrix<U, M>& lhs, const Matrix<U, M>& rhs);
+    friend Matrix<U, M> operator*(const Matrix<U, M> & lhs,
+                                  const Matrix<U, M> & rhs);
     template <typename U>
-    friend Quaternion<U> operator*(const Matrix<U, 4>& lhs, const Quaternion<U>& rhs);
+    friend Quaternion<U> operator*(const Matrix<U, 4> & lhs,
+                                   const Quaternion<U> & rhs);
 
 public:
     Matrix() : m_val{ } { }
@@ -23,7 +25,9 @@ public:
     {
         for (auto i = 0; i < N; ++i)
             for (auto j = 0; j < N; ++j)
+            {
                 m_val[i][j] = val[i][j];
+            }
     }
 
 private:
