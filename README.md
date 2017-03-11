@@ -2,7 +2,7 @@
 
 Version：2017年3月
 
-注：本文中的算法描述和截图对应版本为commit #3d3b4925570a5a36994f3c5f116ceb7c4ec034ef。
+注：本文中的算法描述和截图对应版本为commit 3d3b4925570a5a36994f3c5f116ceb7c4ec034ef。
 
 ## 1 程序内容
 
@@ -320,7 +320,7 @@ static REAL shiftX = 0.0f;
 static REAL shiftY = 0.0f;
 constexpr REAL shiftStep = 10.0f;
 ```
-定义在消息响应函数`MainWindow::HandleMessage`中，表示模型的缩放比例，缩放调节步长，旋转角度（单位度），旋转角调节步长，平移距离（单位像素），平移调节步长。
+定义在消息响应函数`MainWindow::HandleMessage()`中，表示模型的缩放比例，缩放调节步长，旋转角度（单位度），旋转角调节步长，平移距离（单位像素），平移调节步长。
 ```cpp
 Color background{30, 30, 30};
 ```
@@ -355,7 +355,7 @@ bunny_wt.obj | 34834 | 69664 | 无孔兔子模型
 
 ### 6.2 部分模型效果截图
 
-在Release模式下使用`/O2`进行编译，面片数少于4000左右的图像可以流畅显示并缩放，维纳斯模型和兔子模型在缩放时有一定延迟。以下是部分模型显示的结果。
+在Release模式下使用`/O2`优化参数进行编译，面片数少于4000左右的图像可以流畅显示并缩放，维纳斯模型和兔子模型在缩放时有一定延迟。以下是部分模型显示的结果。
 
 ![图 6-1 simple_planes.obj](Images/6-1simple_planes.jpg)
 
