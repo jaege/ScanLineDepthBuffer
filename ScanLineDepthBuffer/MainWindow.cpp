@@ -1,6 +1,8 @@
 ﻿#include <string>
 #include <Windows.h>
 #include <shobjidl.h>
+#include <chrono>  // high_resolution_clock
+using Clock = std::chrono::high_resolution_clock;
 #include "MainWindow.h"
 #include "DebugPrint.h"
 
@@ -43,7 +45,6 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     degreeY = 0.0f;
                     shiftX = 0.0f;
                     shiftY = 0.0f;
-                    m_objModel.GetBuffer(buffer, scaleFactor, degreeX, degreeY, shiftX, shiftY);
                     InvalidateRect(m_hwnd, NULL, FALSE);
                 }
                 break;
@@ -51,7 +52,6 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 // Zoom in
                 {
                     if (scaleFactor < 50.0f) { scaleFactor += scaleFactorStep; }
-                    m_objModel.GetBuffer(buffer, scaleFactor, degreeX, degreeY, shiftX, shiftY);
                     InvalidateRect(m_hwnd, NULL, FALSE);
                 }
                 break;
@@ -59,7 +59,6 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 // Zoom out
                 {
                     if (scaleFactor > 0.05f) { scaleFactor -= scaleFactorStep; }
-                    m_objModel.GetBuffer(buffer, scaleFactor, degreeX, degreeY, shiftX, shiftY);
                     InvalidateRect(m_hwnd, NULL, FALSE);
                 }
                 break;
@@ -68,7 +67,6 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 {
                     degreeY -= degreeStep;
                     if (degreeY < -360) degreeY += 360;
-                    m_objModel.GetBuffer(buffer, scaleFactor, degreeX, degreeY, shiftX, shiftY);
                     InvalidateRect(m_hwnd, NULL, FALSE);
                 }
                 break;
@@ -77,7 +75,6 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 {
                     degreeY += degreeStep;
                     if (degreeY > 360) degreeY -= 360;
-                    m_objModel.GetBuffer(buffer, scaleFactor, degreeX, degreeY, shiftX, shiftY);
                     InvalidateRect(m_hwnd, NULL, FALSE);
                 }
                 break;
@@ -86,7 +83,6 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 {
                     degreeX += degreeStep;
                     if (degreeX > 360) degreeX -= 360;
-                    m_objModel.GetBuffer(buffer, scaleFactor, degreeX, degreeY, shiftX, shiftY);
                     InvalidateRect(m_hwnd, NULL, FALSE);
                 }
                 break;
@@ -95,7 +91,6 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 {
                     degreeX -= degreeStep;
                     if (degreeX < -360) degreeX += 360;
-                    m_objModel.GetBuffer(buffer, scaleFactor, degreeX, degreeY, shiftX, shiftY);
                     InvalidateRect(m_hwnd, NULL, FALSE);
                 }
                 break;
@@ -103,7 +98,6 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 // Move object left.
                 {
                     shiftX -= shiftStep;
-                    m_objModel.GetBuffer(buffer, scaleFactor, degreeX, degreeY, shiftX, shiftY);
                     InvalidateRect(m_hwnd, NULL, FALSE);
                 }
                 break;
@@ -111,7 +105,6 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 // Move object right.
                 {
                     shiftX += shiftStep;
-                    m_objModel.GetBuffer(buffer, scaleFactor, degreeX, degreeY, shiftX, shiftY);
                     InvalidateRect(m_hwnd, NULL, FALSE);
                 }
                 break;
@@ -119,7 +112,6 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 // Move object up.
                 {
                     shiftY -= shiftStep;
-                    m_objModel.GetBuffer(buffer, scaleFactor, degreeX, degreeY, shiftX, shiftY);
                     InvalidateRect(m_hwnd, NULL, FALSE);
                 }
                 break;
@@ -127,7 +119,6 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
                 // Move object down.
                 {
                     shiftY += shiftStep;
-                    m_objModel.GetBuffer(buffer, scaleFactor, degreeX, degreeY, shiftX, shiftY);
                     InvalidateRect(m_hwnd, NULL, FALSE);
                 }
                 break;
@@ -164,9 +155,6 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
             INT32 width = rc.right - rc.left;
             INT32 height = rc.bottom - rc.top;
             buffer.Resize(width, height);
-            //m_buffer.DebugDarwRandomPicture();
-
-            m_objModel.GetBuffer(buffer, scaleFactor, degreeX, degreeY, shiftX, shiftY);
         }
         return 0;
 
@@ -176,11 +164,32 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(m_hwnd, &ps);
 
+            //m_buffer.DebugDarwRandomPicture();
+
+            auto t1 = Clock::now();
+            m_objModel.GetBuffer(buffer, scaleFactor, degreeX, degreeY, shiftX, shiftY);
+            auto t2 = Clock::now();
+            REAL deltaT = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count() / 1000.0f;
+
             RECT rc;
             GetClientRect(m_hwnd, &rc);
             INT32 width = rc.right - rc.left;
             INT32 height = rc.bottom - rc.top;
             buffer.OnPaint(hdc, width, height);
+
+            rc.top += 10;
+            rc.left += 10;
+            rc.right -= 10;
+            SetTextColor(hdc, Color::WHITE.GetColorCode());
+            SetBkMode(hdc, TRANSPARENT);
+            constexpr WCHAR *description = L"W A S D: move\nI J K L: rotate\n"
+                                           L"Z C: zoom\nX: reset";
+            DrawText(hdc, description, -1, &rc, DT_TOP | DT_LEFT | DT_NOCLIP);
+
+            constexpr UINT32 MAX_CHARS = 100;
+            WCHAR strbuf[MAX_CHARS];
+            swprintf(strbuf, MAX_CHARS, L"%.3f ms\n%.3f fps", deltaT, 1000.0f / deltaT);
+            DrawText(hdc, strbuf, -1, &rc, DT_TOP | DT_RIGHT | DT_NOCLIP);
 
             EndPaint(m_hwnd, &ps);
         }
