@@ -10,9 +10,14 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     static REAL scaleFactor = 0.95f;
     constexpr REAL scaleFactorStep = 0.05f;
+
     static REAL degreeX = 0.0f;
     static REAL degreeY = 0.0f;
     constexpr REAL degreeStep = 5.0f;
+
+    static REAL shiftX = 0.0f;
+    static REAL shiftY = 0.0f;
+    constexpr REAL shiftStep = 10.0f;
 
     switch (uMsg)
     {
@@ -30,59 +35,99 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
             DebugPrint(L"WM_CHAR: %c", ch);
             switch (ch)
             {
-            case L'z':
-            case L'Z':
+            case L'x': case L'X':
+                // Reset object
+                {
+                    scaleFactor = 0.95f;
+                    degreeX = 0.0f;
+                    degreeY = 0.0f;
+                    shiftX = 0.0f;
+                    shiftY = 0.0f;
+                    m_objModel.GetBuffer(buffer, scaleFactor, degreeX, degreeY, shiftX, shiftY);
+                    InvalidateRect(m_hwnd, NULL, FALSE);
+                }
+                break;
+            case L'z': case L'Z':
+                // Zoom in
                 {
                     if (scaleFactor < 50.0f) { scaleFactor += scaleFactorStep; }
-                    m_objModel.GetBuffer(buffer, scaleFactor, degreeX, degreeY);
+                    m_objModel.GetBuffer(buffer, scaleFactor, degreeX, degreeY, shiftX, shiftY);
                     InvalidateRect(m_hwnd, NULL, FALSE);
                 }
                 break;
-            case L'c':
-            case L'C':
+            case L'c': case L'C':
+                // Zoom out
                 {
                     if (scaleFactor > 0.05f) { scaleFactor -= scaleFactorStep; }
-                    m_objModel.GetBuffer(buffer, scaleFactor, degreeX, degreeY);
+                    m_objModel.GetBuffer(buffer, scaleFactor, degreeX, degreeY, shiftX, shiftY);
                     InvalidateRect(m_hwnd, NULL, FALSE);
                 }
                 break;
-            case L'j':
-            case L'J':
+            case L'j': case L'J':
                 // Rotate object about y axis.
                 {
                     degreeY -= degreeStep;
                     if (degreeY < -360) degreeY += 360;
-                    m_objModel.GetBuffer(buffer, scaleFactor, degreeX, degreeY);
+                    m_objModel.GetBuffer(buffer, scaleFactor, degreeX, degreeY, shiftX, shiftY);
                     InvalidateRect(m_hwnd, NULL, FALSE);
                 }
                 break;
-            case L'l':
-            case L'L':
+            case L'l': case L'L':
                 // Rotate object about y axis.
                 {
                     degreeY += degreeStep;
                     if (degreeY > 360) degreeY -= 360;
-                    m_objModel.GetBuffer(buffer, scaleFactor, degreeX, degreeY);
+                    m_objModel.GetBuffer(buffer, scaleFactor, degreeX, degreeY, shiftX, shiftY);
                     InvalidateRect(m_hwnd, NULL, FALSE);
                 }
                 break;
-            case L'i':
-            case L'I':
+            case L'i': case L'I':
                 // Rotate object about x axis.
                 {
                     degreeX += degreeStep;
                     if (degreeX > 360) degreeX -= 360;
-                    m_objModel.GetBuffer(buffer, scaleFactor, degreeX, degreeY);
+                    m_objModel.GetBuffer(buffer, scaleFactor, degreeX, degreeY, shiftX, shiftY);
                     InvalidateRect(m_hwnd, NULL, FALSE);
                 }
                 break;
-            case L'k':
-            case L'K':
+            case L'k': case L'K':
                 // Rotate object about x axis.
                 {
                     degreeX -= degreeStep;
                     if (degreeX < -360) degreeX += 360;
-                    m_objModel.GetBuffer(buffer, scaleFactor, degreeX, degreeY);
+                    m_objModel.GetBuffer(buffer, scaleFactor, degreeX, degreeY, shiftX, shiftY);
+                    InvalidateRect(m_hwnd, NULL, FALSE);
+                }
+                break;
+            case L'a': case L'A':
+                // Move object left.
+                {
+                    shiftX -= shiftStep;
+                    m_objModel.GetBuffer(buffer, scaleFactor, degreeX, degreeY, shiftX, shiftY);
+                    InvalidateRect(m_hwnd, NULL, FALSE);
+                }
+                break;
+            case L'd': case L'D':
+                // Move object right.
+                {
+                    shiftX += shiftStep;
+                    m_objModel.GetBuffer(buffer, scaleFactor, degreeX, degreeY, shiftX, shiftY);
+                    InvalidateRect(m_hwnd, NULL, FALSE);
+                }
+                break;
+            case L'w': case L'W':
+                // Move object up.
+                {
+                    shiftY -= shiftStep;
+                    m_objModel.GetBuffer(buffer, scaleFactor, degreeX, degreeY, shiftX, shiftY);
+                    InvalidateRect(m_hwnd, NULL, FALSE);
+                }
+                break;
+            case L's': case L'S':
+                // Move object down.
+                {
+                    shiftY += shiftStep;
+                    m_objModel.GetBuffer(buffer, scaleFactor, degreeX, degreeY, shiftX, shiftY);
                     InvalidateRect(m_hwnd, NULL, FALSE);
                 }
                 break;
@@ -121,7 +166,7 @@ LRESULT MainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
             buffer.Resize(width, height);
             //m_buffer.DebugDarwRandomPicture();
 
-            m_objModel.GetBuffer(buffer, scaleFactor, degreeX, degreeY);
+            m_objModel.GetBuffer(buffer, scaleFactor, degreeX, degreeY, shiftX, shiftY);
         }
         return 0;
 

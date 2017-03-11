@@ -121,8 +121,9 @@ void ObjModel::LoadFromObjFile(const std::wstring & filePath)
                m_vertices.size() - 1, m_faces.size());
 }
 
-void ObjModel::SetModelScale(INT32 width, INT32 height, REAL scaleFactor,
-                             REAL degreeX, REAL degreeY)
+void ObjModel::TransformModel(INT32 width, INT32 height, REAL scaleFactor,
+                              REAL degreeX, REAL degreeY,
+                              REAL shiftX, REAL shiftY)
 {
     assert(scaleFactor > 0);
     REAL xScale = width / (m_box.xmax - m_box.xmin);
@@ -133,7 +134,7 @@ void ObjModel::SetModelScale(INT32 width, INT32 height, REAL scaleFactor,
 
     // The matrices are mulitplied in reverse order, i.e. last tranformation comes first.
     Matrix4x4R transform =
-        Transformation::Translate(width / 2.0f, height / 2.0f, 0) *
+        Transformation::Translate(width / 2.0f + shiftX, height / 2.0f + shiftY, 0) *
         Transformation::Scale(scale) *
         Transformation::RotateAboutXAxis(degreeX) *
         Transformation::RotateAboutYAxis(degreeY) *
@@ -142,7 +143,7 @@ void ObjModel::SetModelScale(INT32 width, INT32 height, REAL scaleFactor,
                                   -(m_box.ymin + m_box.ymax) / 2,
                                   -(m_box.zmin + m_box.zmax) / 2);
 
-    m_scaledVertices.clear();
+    m_transformedVertices.clear();
     REAL left = REAL_MAX;
     REAL right = REAL_MIN;
     REAL top = REAL_MAX;
@@ -157,7 +158,7 @@ void ObjModel::SetModelScale(INT32 width, INT32 height, REAL scaleFactor,
         if (newPos.y > bottom) bottom = newPos.y;
         // TODO(jaege): find out why the following push_back call cannot be
         //     moved before comparing x and y.
-        m_scaledVertices.push_back({newPos.x, newPos.y, newPos.z});
+        m_transformedVertices.push_back({newPos.x, newPos.y, newPos.z});
     }
 
     // Round inside the bounding rectangle.
@@ -201,15 +202,15 @@ void ObjModel::InitTables()
 
         // Always use first 3 vertices to calculate the plane equation.
         // face[i].v is vertex id.
-        pn.plane = GetPlane(m_scaledVertices[face[0].v],
-                            m_scaledVertices[face[1].v],
-                            m_scaledVertices[face[2].v]);
+        pn.plane = GetPlane(m_transformedVertices[face[0].v],
+                            m_transformedVertices[face[1].v],
+                            m_transformedVertices[face[2].v]);
         // NOTE(jaege): Only plane face is supported, all vertices must in the
         //     same plane. The planse is assured to have at least 3 vertices.
         // BUG(jaege): check why assert fail when it shouldn't.
         //for (auto it = face.cbegin() + 3; it != face.cend(); ++it)
         //{
-        //    const auto &p = m_scaledVertices[it->v];
+        //    const auto &p = m_transformedVertices[it->v];
         //    FloatingPoint<REAL> lhs(p.x * pn.plane.a + p.y * pn.plane.b +
         //                            p.z * pn.plane.c + pn.plane.d), rhs(0.0f);
         //    assert(lhs.AlmostEquals(rhs));
@@ -225,8 +226,8 @@ void ObjModel::InitTables()
         INT32 btmyi = m_boundingRect.top - 1;
         for (int vid = 0; vid != face.size() - 1; ++vid)
         {
-            const auto *ptop = &m_scaledVertices[face[vid].v];
-            const auto *pbtm = &m_scaledVertices[face[vid + 1].v];
+            const auto *ptop = &m_transformedVertices[face[vid].v];
+            const auto *pbtm = &m_transformedVertices[face[vid + 1].v];
 
             if (ptop->y > pbtm->y)
             {
@@ -284,10 +285,10 @@ void ObjModel::InitTables()
 }
 
 void ObjModel::GetBuffer(OffscreenBuffer &buffer, REAL scaleFactor,
-                         REAL degreeX, REAL degreeY)
+                         REAL degreeX, REAL degreeY, REAL shiftX, REAL shiftY)
 {
-    SetModelScale(buffer.GetWidth(), buffer.GetHeight(), scaleFactor,
-                  degreeX, degreeY);
+    TransformModel(buffer.GetWidth(), buffer.GetHeight(), scaleFactor,
+                   degreeX, degreeY, shiftX, shiftY);
 
     InitTables();
 
@@ -524,7 +525,7 @@ void ObjModel::GetBuffer(OffscreenBuffer &buffer, REAL scaleFactor,
     }
 
     // For debug purpose, draw all vertices.
-    for (const auto & v : m_scaledVertices)
+    for (const auto & v : m_transformedVertices)
     {
         buffer.DebugDrawPoint(std::lround(v.x), std::lround(v.y), Color::GREEN);
     }

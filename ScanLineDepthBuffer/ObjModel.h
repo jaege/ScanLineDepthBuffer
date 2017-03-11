@@ -14,10 +14,12 @@ public:
     void LoadFromObjFile(const std::wstring & filePath);
 
     // scaleFactor: object scale factor, must be positive, 1 means original size
-    // degreeX: rotate about x axis, mesured in degree
-    // degreeX: rotate about y axis, mesured in degree
-    void GetBuffer(OffscreenBuffer & buffer, REAL scaleFactor = 1.0f,
-                   REAL degreeX = 0.0f, REAL degreeY = 0.0f);
+    // degreeX: rotate about x axis of object, mesured in degree
+    // degreeX: rotate about y axis of object, mesured in degree
+    // shiftX: translate in x axis of screen, mesured in pixel
+    // shiftY: translate in y axis of screen, mesured in pixel
+    void GetBuffer(OffscreenBuffer & buffer, REAL scaleFactor,
+                   REAL degreeX, REAL degreeY, REAL shiftX, REAL shiftY);
 
 private:
     std::wstring m_filePath;
@@ -29,15 +31,12 @@ private:
 
     //std::vector<Position3R> m_vertexNormals;
 
-    std::vector<Position3R> m_scaledVertices;
+    std::vector<Position3R> m_transformedVertices;
 
     // width: buffer width in pixel
     // height: buffer height in pixel
-    // scaleFactor: object scale factor, must be positive, 1 means original size
-    // degreeX: rotate about x axis, mesured in degree
-    // degreeX: rotate about y axis, mesured in degree
-    void SetModelScale(INT32 width, INT32 height, REAL scaleFactor,
-                       REAL degreeX, REAL degreeY);
+    void TransformModel(INT32 width, INT32 height, REAL scaleFactor,
+                        REAL degreeX, REAL degreeY, REAL shiftX, REAL shiftY);
 
     struct FaceNode
     {

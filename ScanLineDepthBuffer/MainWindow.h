@@ -9,7 +9,6 @@
 class MainWindow : public BaseWindow<MainWindow>
 {
 public:
-    MainWindow() : m_objModel{ } { }
     PCWSTR ClassName() const override { return L"MainWindow"; }
     LRESULT HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
